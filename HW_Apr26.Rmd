@@ -6,32 +6,50 @@ output:
   html_document: 
     keep_md: yes
 ---
-####3.1.1
+####3.1.1 Prerequisites
 ```{r}
 library(tidyverse)
 ```
-####3.2.1-3
+####3.2 First Steps
 ```{r}
 ggplot2::mpg
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy))
 ```
 
-####3.2.4
+####3.2.4 Exercises
+#####3.2.4.1
 ```{r}
 ggplot(data = mpg)
-#I see an empty space
+```
+#I see an empty space  
+
+#####3.2.4.2
+```{r}
 mtcars
-#mtcars has 32 rows and 11 columns.
+```
+mtcars has 32 rows and 11 columns.  
+
+#####3.2.4.3
+```{r}
 ?mpg
-#drv indicate what kind of "drive" a motor vehicle is. It can be a front-wheel drive (f), a rear wheel drive ("r") or a four wheel drive ("4").
+```
+drv indicates what kind of "drive" a motor vehicle is. It can be a front-wheel drive (f), a rear wheel drive ("r"), or a four wheel drive ("4").  
+
+#####3.2.4.4
+```{r}
 ggplot(data = mpg) +
   geom_point(mapping = aes(x = hwy, y = cyl))
+```
+
+#####3.2.4.5
+```{r}
 ggplot(data = mpg) +
   geom_point(mapping = aes(x = class, y = drv))
-#The class vs drv plot is not informative because a lot of dots overlapped on top of each other, resulting in great loss of information. 
 ```
-####3.3
+The class vs drv plot is not informative because a lot of dots overlapped on top of each other, resulting in great loss of information.  
+
+####3.3 Aesthetic Mappings
 ```{r}
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy, color = class))
@@ -48,43 +66,105 @@ ggplot(data = mpg) +
 ## make sure this time the "color = " argument is not in the aes() brackets. Or color will appear as a varieble with a legend the says "blue".)
 ```
 
-####3.3.1
+####3.3.1 Exercises
+#####3.3.1.1
+The code   
+ggplot(data = mpg) +   
+  geom_point(mapping = aes(x = displ, y = hwy, color = "blue"))  
+is wrong because the color = argument went inside the aes() bracket.  
+
+#####3.3.1.2
+Categorical variables are :"manufacturer", "model", "trans", "drv", "fl" and "class".   
+Continuous variables are "displ", "year", "cyl", "cty" and "hwy".      
+I can see the class of each variable when I run _ggplot2::mpg_. The class of each variable (character, integer etc.) appears in "<>"'s underneath the name of the variable.  
+
+#####3.3.1.3
 ```{r}
-#1. The code 
-#ggplot(data = mpg) + 
-#  geom_point(mapping = aes(x = displ, y = hwy, color = "blue"))
-#is wrong because the color = argument went inside the aes() bracket.
-
-#2. 
-#Categorical variables are :"manufacturer", "model", "trans", "drv", "fl"           and "class". Continuous variables are "displ", "year", "cyl", "cty" and "hwy".    
-#I can see the class of each variable when I run ggplot2::mpg. The class of each variable (character, integer etc.) appears in "<>"'s underneath the names of the variables.
-
-#3.
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy, color = year))
-#The color has a gradient. 
+```
+The color has a gradient (although in this case the gradient only shows in the legend).   
 
-#4. 
+#####3.3.1.4
+```{r}
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy, color = hwy))
-#The color gradient follows the numbers on the y axis.
+```
+The color gradient follows the number increments on the y axis.  
 
-#5. 
+#####3.3.1.5
+```{r}
 ?geom_point
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy, shape = drv, stroke = 5))
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy, shape = drv, stroke = 3))
-#It looks like stroke designates the size of the dots. It also looks like taht it works for the hollow and solid shapes. Not sure about the color-filled ones. 
+```
+#It looks like stroke designates the size of the dots. It also looks like taht it works for the hollow and solid shapes. Not sure about the color-filled ones.   
 
-#6. 
+#####3.3.1.6
+```{r}
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy, color = displ <5))
-#It colors the data points by the truthfulness of the statement (displ <5 or >= 5).
 ```
+It colors the data points by the truthfulness of the statement (displ <5 or >= 5).  
 
-####3.4
+####3.5 Facets
 ```{r}
-
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~ class, nrow = 2)
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_grid(drv ~ cyl)
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_grid(. ~ cyl)
+##For facetting by only one variable, use facet_wrap(~ <var>) for categorial variables, and facet_grid(. ~ <var>) (or facet_grid(<var> ~ . )) for continuous variables. 
 ```
 
+####3.5.1 Exercises  
+```{r}
+ ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(cty ~ .)
+```
+Oh my goodness.. it looks pretty much like a disaster. The function cuts the dataset into all possible levels of the continuous variable.  
+
+#####3.5.1.2
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_grid(drv ~ cyl)
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = drv, y = cyl))
+```
+This means that there is no data point falling in the category of 4 cylinder and rear wheel drive. The latter plot basically indicates whether or not the corresponding facet plot has points in it. 
+
+#####3.5.1.3  
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(drv ~ .)
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(. ~ cyl)
+```
+The former code facets the displ by hwy data by types of drive on the y axis. The latter facets the displ by nwy data by number of cylinders on the x axis.   
+
+#####3.5.1.4
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~ class, nrow = 2)
+```
+Using facet it is easier to see the distribution of each "facet" of the data, but it can be hard to tell how each facet relate or contrast other facets. For example, there is no way we can tell from the first facetted plot that the 2seaters havd higher than expected fuel efficiency given its engine size. But this information is readily visible if we use a color coded whole-dataset plot. As the dataset gets larger and the distribution gets wider and the data points have more overlaps, it might be harder to extract useful information from one color coded plot. In those situations, facetting might be more useful. 
+
+#####3.5.1.5
+```{r}
+?facet_wrap
+```
+the nrow and ncol arguments determines the layout/arrangement of the facetted plots. There is not equivalent arguments in the facet_grid function because it generates a grid, whose number of columns and rows in facet_grid are determined by the numbers of levels in the two input variables. We typically do not want to wrap a grid around on itself becasue that can be really hard to read.   
+
+#####3.5.1.6  
+"When using facet_grid() we should usually put the variable with more unique levels in the columns."" I imagine this is because we can always elongate the vertical axis of a plot (i.e. producing more pages in a document) without compromising the readability of the information. The same things it not as easily done or intuitive for horizontal expansion of a plot/document. 
