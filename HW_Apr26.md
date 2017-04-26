@@ -190,7 +190,7 @@ ggplot(data = mpg) +
 ## make sure this time the "color = " argument is not in the aes() brackets. Or color will appear as a varieble with a legend the says "blue".)
 ```
 
-####3.3.1 Exercises
+####3.3.1 Exercises  
 #####3.3.1.1   
 The code   
 ggplot(data = mpg) +   
