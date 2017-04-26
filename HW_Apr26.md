@@ -248,6 +248,13 @@ ggplot(data = mpg) +
 ```
 
 ![](HW_Apr26_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
+
+```r
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = class =="compact"))
+```
+
+![](HW_Apr26_files/figure-html/unnamed-chunk-12-2.png)<!-- -->
 It colors the data points by the truthfulness of the statement (displ <5 or >= 5).    
 
 ####3.5 Facets  

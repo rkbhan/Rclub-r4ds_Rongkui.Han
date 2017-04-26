@@ -106,6 +106,8 @@ It looks like stroke designates the size of the dots. It also looks like that it
 ```{r}
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy, color = displ <5))
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = class =="compact"))
 ```
 It colors the data points by the truthfulness of the statement (displ <5 or >= 5).    
 
