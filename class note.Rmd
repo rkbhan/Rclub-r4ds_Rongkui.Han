@@ -1,0 +1,12 @@
+---
+title: "R club Note"
+author: "Rongkui Han"
+date: "April 26, 2017"
+output: html_document
+---
+1. When you use a ` ("tickmark") in front of a line, the knitted document formats that line like a line of code but does not run it.  
+
+2. embeddings in R code chuncks that determine figure dimensions:  
+{r fig.with = 7 fid.height = 7} something like this. The unit is in inches.  
+
+3. 
