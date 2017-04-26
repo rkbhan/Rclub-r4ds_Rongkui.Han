@@ -354,4 +354,4 @@ Using facet it is easier to see the distribution of each "facet" of the data, bu
 the nrow and ncol arguments determines the layout/arrangement of the facetted plots. There is not equivalent arguments in the facet_grid function because it generates a grid, whose number of columns and rows in facet_grid are determined by the numbers of levels in the two input variables. We typically do not want to wrap a grid around on itself becasue that can be really hard to read.  
 
 #####3.5.1.6    
-"When using facet_grid() we should usually put the variable with more unique levels in the columns."" I imagine this is because we can always elongate the vertical axis of a plot (i.e. producing more pages in a document) without compromising the readability of the information. The same things it not as easily done or intuitive for horizontal expansion of a plot/document. 
+"When using facet_grid() we should usually put the variable with more unique levels in the columns." Just because the screen is wider than it is tall. 
