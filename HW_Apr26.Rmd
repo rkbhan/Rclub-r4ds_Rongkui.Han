@@ -67,5 +67,24 @@ ggplot(data = mpg) +
 #4. 
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy, color = hwy))
+#The color gradient follows the numbers on the y axis.
+
+#5. 
+?geom_point
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, shape = drv, stroke = 5))
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, shape = drv, stroke = 3))
+#It looks like stroke designates the size of the dots. It also looks like taht it works for the hollow and solid shapes. Not sure about the color-filled ones. 
+
+#6. 
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = displ <5))
+#It colors the data points by the truthfulness of the statement (displ <5 or >= 5).
+```
+
+####3.4
+```{r}
+
 ```
 
