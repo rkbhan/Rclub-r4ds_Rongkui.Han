@@ -1,0 +1,14 @@
+---
+title: "Rmarkdown_HW_Apr26"
+author: "Rongkui Han"
+date: "April 25, 2017"
+output: 
+  html_document: 
+    keep_md: yes
+---
+####3.1.1
+```{r}
+library(tidyverse)
+```
+####3.2
+
