@@ -9,10 +9,12 @@ output: html_document
 ```{r}
 ggplot2::mpg
 library(tidyverse)
-ggplot(data = mpg)+
-  geom_point(mapping = aes(x = displ, y = hwy), shape = 22, stroke = 15) +
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color = class == "compact"), shape = 22, stroke = 5) +
 #What does stroke do. It doesn't work on color filled shapes.
-ggplot(data = mpg)+
+
+  
+ggplot(data = mpg) +
   geom_point(mapping = aes(x = displ, y = hwy), shape = 22, stroke = 15) +
   facet_wrap(drv~cyl)
 #what happens when you facet_wrap two variables. Not the preties. 

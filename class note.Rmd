@@ -20,5 +20,12 @@ ggplot(data = mpg)+
 #what happens when you facet_wrap two variables. Not the preties but might be useful. 
 ```
 
-
+4. 
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color = class == "compact"), shape = 22, stroke = 5) +
+  labs(color = "Legend") +
+  scale_color_manual(labels = c("Not compact", "compact"), values = c("red","blue"))
+#Use labs() and scale_color_manual() to change the text in the legend.
+```
 
