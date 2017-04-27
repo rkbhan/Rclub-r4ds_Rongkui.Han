@@ -1,6 +1,7 @@
 # Rmarkdown_HW_Apr26
 Rongkui Han  
 April 25, 2017  
+
 ####3.1.1 Prerequisites  
 
 ```r
@@ -24,6 +25,7 @@ library(tidyverse)
 ## filter(): dplyr, stats
 ## lag():    dplyr, stats
 ```
+
 ####3.2 First Steps  
 
 ```r
@@ -62,6 +64,7 @@ ggplot(data = mpg)
 ```
 
 ![](HW_Apr26_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
 I see an empty space  
 
 #####3.2.4.2   
@@ -105,6 +108,7 @@ mtcars
 ## Maserati Bora       15.0   8 301.0 335 3.54 3.570 14.60  0  1    5    8
 ## Volvo 142E          21.4   4 121.0 109 4.11 2.780 18.60  1  1    4    2
 ```
+
 mtcars has 32 rows and 11 columns.  
 
 #####3.2.4.3   
@@ -112,6 +116,7 @@ mtcars has 32 rows and 11 columns.
 ```r
 ?mpg
 ```
+
 drv indicates what kind of "drive" a motor vehicle is. It can be a front-wheel drive (f), a rear wheel drive ("r"), or a four wheel drive ("4").  
 
 #####3.2.4.4   
@@ -131,6 +136,7 @@ ggplot(data = mpg) +
 ```
 
 ![](HW_Apr26_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+
 The class vs drv plot is not informative because a lot of dots overlapped on top of each other, resulting in great loss of information.  
 
 ####3.3 Aesthetic Mappings   
@@ -191,6 +197,7 @@ ggplot(data = mpg) +
 ```
 
 ####3.3.1 Exercises  
+
 #####3.3.1.1   
 The code   
 ggplot(data = mpg) +   
@@ -210,6 +217,7 @@ ggplot(data = mpg) +
 ```
 
 ![](HW_Apr26_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
+
 The color has a gradient (although in this case the gradient only shows in the legend).   
 
 #####3.3.1.4   
@@ -220,6 +228,7 @@ ggplot(data = mpg) +
 ```
 
 ![](HW_Apr26_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+
 The color gradient follows the number increments on the y axis.  
 
 #####3.3.1.5   
@@ -238,6 +247,7 @@ ggplot(data = mpg) +
 ```
 
 ![](HW_Apr26_files/figure-html/unnamed-chunk-11-2.png)<!-- -->
+
 It looks like stroke designates the size of the dots. It also looks like that it works for the hollow and solid shapes. Not sure about the color-filled ones.   
 
 #####3.3.1.6     
@@ -255,6 +265,7 @@ ggplot(data = mpg) +
 ```
 
 ![](HW_Apr26_files/figure-html/unnamed-chunk-12-2.png)<!-- -->
+
 It colors the data points by the truthfulness of the statement (displ <5 or >= 5).    
 
 ####3.5 Facets  
@@ -296,6 +307,7 @@ ggplot(data = mpg) +
 ```
 
 ![](HW_Apr26_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
+
 Oh my goodness.. it looks pretty much like a disaster. The function cuts the dataset into all possible levels of the continuous variable.   
 
 #####3.5.1.2  
@@ -314,6 +326,7 @@ ggplot(data = mpg) +
 ```
 
 ![](HW_Apr26_files/figure-html/unnamed-chunk-15-2.png)<!-- -->
+
 This means that there is no data point falling in the category of 4 cylinder and rear wheel drive. The latter plot basically indicates whether or not the corresponding facet plot has points in it. 
 
 #####3.5.1.3    
@@ -333,6 +346,7 @@ ggplot(data = mpg) +
 ```
 
 ![](HW_Apr26_files/figure-html/unnamed-chunk-16-2.png)<!-- -->
+
 The former code facets the displ by hwy data by types of drive on the y axis. The latter facets the displ by nwy data by number of cylinders on the x axis.   
 
 #####3.5.1.4  
@@ -344,6 +358,7 @@ ggplot(data = mpg) +
 ```
 
 ![](HW_Apr26_files/figure-html/unnamed-chunk-17-1.png)<!-- -->
+
 Using facet it is easier to see the distribution of each "facet" of the data, but it can be hard to tell how each facet relate or contrast other facets. For example, there is no way we can tell from the first facetted plot that the 2seaters havd higher than expected fuel efficiency given its engine size. But this information is readily visible if we use a color coded whole-dataset plot. As the dataset gets larger and the distribution gets wider and the data points have more overlaps, it might be harder to extract useful information from one color coded plot. In those situations, facetting might be more useful.  
 
 #####3.5.1.5  
@@ -351,6 +366,7 @@ Using facet it is easier to see the distribution of each "facet" of the data, bu
 ```r
 ?facet_wrap
 ```
+
 the nrow and ncol arguments determines the layout/arrangement of the facetted plots. There is not equivalent arguments in the facet_grid function because it generates a grid, whose number of columns and rows in facet_grid are determined by the numbers of levels in the two input variables. We typically do not want to wrap a grid around on itself becasue that can be really hard to read.  
 
 #####3.5.1.6    
