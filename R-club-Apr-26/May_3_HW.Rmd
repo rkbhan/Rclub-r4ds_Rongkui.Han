@@ -179,6 +179,22 @@ ggplot(data = diamonds) +
 I think we need to set group = 1 because we want to find of the proportion of each x category in relation to the total population, not in relation to itself. Or the proportion is always gonna be 1. 
 
 ####3.8 Position Adjustments
+```{r}
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, colour = cut))
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = cut))
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity)) #automatic stacking of a second variable.
+ggplot(data = diamonds, mapping = aes(x = cut, fill = clarity)) + 
+  geom_bar(alpha = 1/5, position = "identity") # un-stacked. 
+ggplot(data = diamonds, mapping = aes(x = cut, colour = clarity)) + 
+  geom_bar(fill = NA, position = "identity") #un-stacked. Rather difficult to read. 
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity), position = "fill") # for comparing composition across different groups. 
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity), position = "dodge") # this is pretty
+```
 
 
 
