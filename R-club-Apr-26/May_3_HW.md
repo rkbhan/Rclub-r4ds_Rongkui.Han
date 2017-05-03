@@ -402,5 +402,205 @@ ggplot(data = diamonds) +
 
 ![](May_3_HW_files/figure-html/unnamed-chunk-12-7.png)<!-- -->
 
+```r
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy), position = "jitter") # the jitter function adds a little random noise to each data point so they dont overlap.
+```
 
+![](May_3_HW_files/figure-html/unnamed-chunk-12-8.png)<!-- -->
+
+####3.8.1 Exercise  
+#####1.  
+
+```r
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_point()
+```
+
+![](May_3_HW_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
+
+The problem with this plot is overplotting, as in there are more datapoints than there are shown in the plot. Tp fix it we need to:  
+
+```r
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_point(position = "jitter")
+```
+
+![](May_3_HW_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
+
+#####2.  
+width and height arguments control the amount of jittering in the grom_jitter() function.   
+
+#####3.   
+
+```r
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_jitter()
+```
+
+![](May_3_HW_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
+
+```r
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_count()
+```
+
+![](May_3_HW_files/figure-html/unnamed-chunk-15-2.png)<!-- -->
+
+geom_count() uses size of the dot to represent how many dots are located on the exct same spot on the plot, while geom_jitter() moves each plot slightly so they don't mask over each other. I think I like the geom_count() function a little better, because it doesn't alter the data presented.  
+
+#####4.  
+The default position adjustment for geom_boxplot() is "dodge". Let us take a look.  
+
+```r
+ggplot(data = mpg, mapping = aes(x = drv, y = hwy, fill = class)) + 
+  geom_boxplot()
+```
+
+![](May_3_HW_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
+
+```r
+ggplot(data = mpg, mapping = aes(x = drv, y = hwy, fill = class)) + 
+  geom_boxplot(position = "identity") #this made a big difference
+```
+
+![](May_3_HW_files/figure-html/unnamed-chunk-16-2.png)<!-- -->
+
+####3.9  
+
+```r
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) + 
+  geom_boxplot()
+```
+
+![](May_3_HW_files/figure-html/unnamed-chunk-17-1.png)<!-- -->
+
+```r
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) + 
+  geom_boxplot() +
+  coord_flip()
+```
+
+![](May_3_HW_files/figure-html/unnamed-chunk-17-2.png)<!-- -->
+
+```r
+#######
+library(maps)
+```
+
+```
+## 
+## Attaching package: 'maps'
+```
+
+```
+## The following object is masked from 'package:purrr':
+## 
+##     map
+```
+
+```r
+nz <- map_data("nz")
+ggplot(nz, aes(long, lat, group = group)) +
+  geom_polygon(fill = "white", colour = "black")
+```
+
+![](May_3_HW_files/figure-html/unnamed-chunk-17-3.png)<!-- -->
+
+```r
+ggplot(nz, aes(long, lat, group = group)) +
+  geom_polygon(fill = "white", colour = "black") +
+  coord_quickmap()
+```
+
+![](May_3_HW_files/figure-html/unnamed-chunk-17-4.png)<!-- -->
+
+```r
+#######
+bar <- ggplot(data = diamonds) + 
+  geom_bar(
+    mapping = aes(x = cut, fill = cut), 
+    show.legend = FALSE,
+    width = 1
+  ) + 
+  theme(aspect.ratio = 1) +
+  labs(x = NULL, y = NULL)
+
+bar + coord_flip()
+```
+
+![](May_3_HW_files/figure-html/unnamed-chunk-17-5.png)<!-- -->
+
+```r
+bar + coord_polar()
+```
+
+![](May_3_HW_files/figure-html/unnamed-chunk-17-6.png)<!-- -->
+
+####3.9.1 Exercise  
+#####1.   
+
+```r
+bar2 = ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity))
+bar2 + coord_polar()
+```
+
+![](May_3_HW_files/figure-html/unnamed-chunk-18-1.png)<!-- -->
+
+#####2.  
+labs() changes plot title/caption and labeling of the axis.   
+
+#####3.  
+
+```r
+nz.map1 = ggplot(nz, aes(long, lat, group = group)) +
+  geom_polygon(fill = "white", colour = "black")
+nz.map1 + coord_quickmap()
+```
+
+![](May_3_HW_files/figure-html/unnamed-chunk-19-1.png)<!-- -->
+
+```r
+library(mapproj)
+nz.map1 + coord_map()
+```
+
+![](May_3_HW_files/figure-html/unnamed-chunk-19-2.png)<!-- -->
+
+I noticed that I needed to install package "mapproj" in order to run the coord_map() function. there is no latitude 46, 42 or 38 ticks on the y axis on the map generated from coord_map().
+
+#####4.  
+
+
+```r
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point() + 
+  geom_abline() +
+  coord_fixed()
+```
+
+![](May_3_HW_files/figure-html/unnamed-chunk-20-1.png)<!-- -->
+
+```r
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point() + 
+  geom_abline()
+```
+
+![](May_3_HW_files/figure-html/unnamed-chunk-20-2.png)<!-- -->
+
+Coord_fixed() made srue that the x- and y-axis had the same length for each unit increment. This is important when we are comparing two variables of the same unit. The geom_abline() added a reference line for clarification. Any vehicle above the line has higher highway mileage than city mileage, which is shown to be all the vehicles in this dataset.   
+
+####3.10 The layered grammar of graphics
+ggplot code template:
+
+ggplot(data = <DATA>) + 
+  <GEOM_FUNCTION>(
+     mapping = aes(<MAPPINGS>),
+     stat = <STAT>, 
+     position = <POSITION>
+  ) +
+  <COORDINATE_FUNCTION> +
+  <FACET_FUNCTION>
 
