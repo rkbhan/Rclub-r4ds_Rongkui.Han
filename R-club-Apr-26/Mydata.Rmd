@@ -9,5 +9,10 @@ output: html_document
 mydata = read_csv("R-club-Apr-26/Qtrimm.stat.csv")
 View(mydata)
 mydata = mydata[,-1]
+mydata$TR.percent = substr(mydata$TR.percent,2,7)
+mydata$TB.percent = substr(mydata$TB.percent,2,7)
+mydata$KR.percent = substr(mydata$KR.percent,2,7)
+mydata$KB.percent = substr(mydata$KB.percent,2,7)
+
 ```
 
