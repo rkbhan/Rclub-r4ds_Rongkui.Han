@@ -1,0 +1,13 @@
+---
+title: "Mydata_May3"
+author: "Rongkui Han"
+date: "May 3, 2017"
+output: html_document
+---
+
+```{r}
+mydata = read_csv("R-club-Apr-26/Qtrimm.stat.csv")
+View(mydata)
+mydata = mydata[,-1]
+```
+
