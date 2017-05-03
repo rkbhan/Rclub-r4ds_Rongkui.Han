@@ -1,1 +1,21 @@
+---
+title: "Rmarkdown_HW_May3"
+author: "Rongkui Han"
+date: "May 3, 2017"
+output: 
+  html_document: 
+    keep_md: yes
+--- 
+####3.6 Geometric Objects
+```{r}
+library(tidyverse)
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))
+ggplot(data = mpg) + 
+  geom_smooth(mapping = aes(x = displ, y = hwy))
+ggplot(data = mpg) + 
+  geom_smooth(mapping = aes(x = displ, y = hwy, linetype = drv, color = drv)) #this is really a funny looking plot. 
+ggplot(data = mpg) +
+  geom_smooth(mapping = aes(x = displ, y = hwy, group = drv)) #"group" aesthetics just group the data according to a category and overlay each group on top of each other. it does not add a separate visual feature (e.g. colors/shape/legend etc.)
+```
 
