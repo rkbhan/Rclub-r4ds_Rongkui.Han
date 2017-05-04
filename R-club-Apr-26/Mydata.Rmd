@@ -6,13 +6,46 @@ output: html_document
 ---
 
 ```{r}
-mydata = read_csv("R-club-Apr-26/Qtrimm.stat.csv")
+mydata = read.csv("/Users/apple/Desktop/UC_Davis/R_club/Rclub-r4ds_Rongkui.Han/R-club-Apr-26/Qtrimm.stat.csv")
 View(mydata)
 mydata = mydata[,-1]
-mydata$TR.percent = substr(mydata$TR.percent,2,7)
-mydata$TB.percent = substr(mydata$TB.percent,2,7)
-mydata$KR.percent = substr(mydata$KR.percent,2,7)
-mydata$KB.percent = substr(mydata$KB.percent,2,7)
-
+mydata$TR.percent = mydata$Trimmed.reads/mydata$In.reads
+mydata$TB.percent = mydata$Trimmed.bases/mydata$In.bases
+mydata$KR.percent = 1 - mydata$TR.percent
+mydata$KB.percent = 1 - mydata$TB.percent
+lane = c(rep("A",12), rep("B",12),rep("C",12), rep("D",12),rep("E",12),rep("F",8))
+mydata = cbind(mydata,lane)
+platecol = c(rep(c(1,2,3,4,5,6,7,8,9,10,11,12),5),1,2,3,4,5,6,7,8)
+mydata = cbind(mydata, platecol)
+library(tidyverse)
 ```
+
+#####First I want to take a look at how the base numbers relate to the read numbers.  
+```{r}
+ggplot(data = mydata) +
+  geom_point(mapping = aes(x = In.reads, y = In.bases))
+```
+
+It looks like they have a strict linear relationship, which probably means that there are a fix number of base pairs per RNA read. Now we are going to figure out what that number is:
+```{r}
+model = lm(mydata$In.bases ~ mydata$In.reads)
+model
+```
+From the simple linear regression model we can see that there is approximately 50 base pairs in a read.  
+
+#####Second, we want to see the distribution of percentage of bases kept after the trimming process by each lane where the RNA-seq was done.
+```{r}
+ggplot(data = mydata) +
+  geom_violin(mapping = aes(x = lane, y = KR.percent), trim = FALSE)
+```
+
+#####Then we can do a similar analysis to see if there is a column effect.
+```{r}
+mydata$platecol = as.factor(mydata$platecol)
+ggplot(data = mydata) +
+  geom_violin(mapping = aes(x = platecol, y = KR.percent), trim = FALSE)
+```
+
+This is an interesting plot. It looks like centain columns generate RNA reads with more stable qualities than others. 
+
 

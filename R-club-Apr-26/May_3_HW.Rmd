@@ -122,6 +122,13 @@ ggplot(data = diamonds) +
 ####3.7.1 Exercise  
 #####1.  
 I'm thinking geom_linerange() or geom_pointrange(), but I'm not sure.  
+```{r}
+ggplot(data = diamonds) + 
+  geom_pointrange(mapping = aes(x = cut, y = mean(diamonds$depth), ymin = min(diamonds$depth), ymax = max(diamonds$depth, group = 1)))
+
+##nope it didn't work.
+```
+
 #####2.  
 ```{r}
 ggplot(data = diamonds) + 
