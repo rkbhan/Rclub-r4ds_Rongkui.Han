@@ -45,6 +45,6 @@ ggplot(data = mydata) +
   geom_violin(mapping = aes(x = platecol, y = KR.percent), trim = FALSE)
 ```
 
-This is an interesting plot. It looks like centain columns generate RNA reads with more stable qualities than others. 
+This is an interesting plot. It looks like centain columns generated RNA reads with more stable qualities than others. 
 
 
