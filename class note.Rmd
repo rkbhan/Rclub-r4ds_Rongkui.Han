@@ -40,4 +40,7 @@ plot1 = plot1 + labs(color = "Legend") +
   scale_color_manual(labels = c("Not compact", "compact"), values = c("red","blue"))
 ```
 
+5/3
+install.packages(grid.extra)
+grid.arrange(plot1,plot2, width = c(a,b)) can put two plots side by side. 
 

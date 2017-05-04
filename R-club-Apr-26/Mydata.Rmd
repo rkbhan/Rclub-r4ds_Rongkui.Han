@@ -1,9 +1,11 @@
 ---
-title: "Mydata_May3"
+title: "Quality Check: RNA-seq data"
 author: "Rongkui Han"
 date: "May 3, 2017"
 output: html_document
 ---
+###A Simple Dataset  
+This dataset I am presenting here is a simple summary file from quality trimming 68 RNA-seq samples. I want to see if there is a row or column effect of where the sample was on the plate submitted for RNA-seq. 
 
 ```{r}
 mydata = read.csv("/Users/apple/Desktop/UC_Davis/R_club/Rclub-r4ds_Rongkui.Han/R-club-Apr-26/Qtrimm.stat.csv")
@@ -37,6 +39,8 @@ From the simple linear regression model we can see that there is approximately 5
 ggplot(data = mydata) +
   geom_violin(mapping = aes(x = lane, y = KR.percent), trim = FALSE)
 ```
+
+These look relatively similar to each other.   
 
 #####Then we can do a similar analysis to see if there is a column effect.
 ```{r}
