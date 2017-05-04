@@ -7,7 +7,6 @@ output: html_document
 
 ```{r}
 mydata = read.csv("/Users/apple/Desktop/UC_Davis/R_club/Rclub-r4ds_Rongkui.Han/R-club-Apr-26/Qtrimm.stat.csv")
-View(mydata)
 mydata = mydata[,-1]
 mydata$TR.percent = mydata$Trimmed.reads/mydata$In.reads
 mydata$TB.percent = mydata$Trimmed.bases/mydata$In.bases
