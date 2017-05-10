@@ -6,5 +6,133 @@ output:
   html_document: 
     keep_md: yes
 ---
+####5.1.1 Prerequisites  
+```{r}
+library(nycflights13)
+library(tidyverse)
+```
 
+####5.1.2  
+```{r}
+flights
+```
+
+####5.2 Filter  
+```{r}
+filter(flights, month == 1, day == 1)
+jan1 = filter(flights, month ==1, day ==1)
+dim(jan1)
+#I'm just testing if this is the same as subsetting with basic R operations. It looks like they are the same. 
+jan1.1 = flights[flights$month == 1 & flights$day ==1,] 
+dim(jan1.1)
+#putting statement in parentheses makes R print the variable. 
+(xmas = filter(flights, month == 12, day == 25))
+```
+
+####5.2.1 Comparison  
+```{r}
+sqrt(2) ^ 2 == 2
+1/49 * 49 == 1
+near(sqrt(2) ^ 2 , 2)
+near(1/49 * 49 , 1)
+
+
+```
+
+####5.2.2 Logical operators  
+```{r}
+filter(flights, month == 11 | month == 12)
+
+```
+
+####5.2.4 Exercise  
+#####1. Find all flights that   
+######1.1 Had an arrival delay of two or more hours  
+```{r}
+filter(flights, arr_delay >2)
+```
+
+######1.2 Flew to Houston (IAH or HOU)  
+```{r}
+filter(flights, dest == "IAH" | dest =="HOU")
+```
+
+######1.3 Were operated by United, American, or Delta  
+```{r}
+levels(as.factor(flights$carrier))
+filter(flights, carrier == "UA" | carrier == "AA" | carrier == "DL")
+```
+
+######1.4 Departed in summer (July, August, and September)  
+```{r}
+filter(flights, month == 7 | month == 8 | month == 9)
+```
+
+######1.5 Arrived more than two hours late, but didn’t leave late  
+```{r}
+filter(flights, arr_delay >2 & dep_delay <= 0)
+```
+
+######1.6 Were delayed by at least an hour, but made up over 30 minutes in flight  
+```{r}
+filter(flights, dep_delay >= 1 & dep_delay-arr_delay > 0.5)
+```
+
+######1.7 Departed between midnight and 6am (inclusive)  
+```{r}
+filter(flights, dep_time <= 600 & dep_time >= 0 | dep_time == 2400)
+```
+
+#####2.  
+```{r}
+flights[between(flights$dep_time, 0, 600),]
+#NA's are not removed using this function
+```
+
+#####3.
+```{r}
+table(is.na(flights$dep_time))
+naorno = is.na(flights)
+tablena = apply(naorno, 2, function(x) table(x))
+tablena
+```
+8255 flights have missing departure time. 
+It looks light arrival time (and the correpsonding departure delay, arrival delay and air time) and tail numbers have missing values.   
+
+#####4. 
+```{r}
+NA^0 # not missing, because the 0th power of anything is 1. 
+filter(flights, dep_time == NA | TRUE) # not missing because the "TRUE" option has content
+filter(flights, FALSE & NA) # missing because there is no intersection between "unknown" and "false".
+NA * 0 # i don't know why this is missing...
+```
+
+####5.3 Arrange  
+```{r}
+arrange(flights, year, month, day)
+arrange(flights, desc(arr_time))
+```
+
+####5.3.1 Exercise  
+#####1.   
+```{r}
+arrange(flights, !is.na(arr_time))
+```
+
+#####2.  
+```{r}
+arrange(flights, desc(dep_delay))
+arrange(flights, dep_time)
+```
+
+####3.  
+```{r}
+arrange(flights, desc(distance/air_time))
+```
+
+####4. 
+```{r}
+arrange(flights, desc(distance)) # longest
+arrange(flights, distance) # shortest
+```
 
