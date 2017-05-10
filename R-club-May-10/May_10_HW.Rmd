@@ -17,7 +17,7 @@ library(tidyverse)
 flights
 ```
 
-####5.2 Filter  
+####5.2 Filter()
 ```{r}
 filter(flights, month == 1, day == 1)
 jan1 = filter(flights, month ==1, day ==1)
@@ -73,12 +73,12 @@ filter(flights, month == 7 | month == 8 | month == 9)
 filter(flights, arr_delay >2 & dep_delay <= 0)
 ```
 
-######1.6 Were delayed by at least an hour, but made up over 30 minutes in flight  
+######1.6 Were delayed by at least an hour, but made up over 30 minutes in flight   
 ```{r}
 filter(flights, dep_delay >= 1 & dep_delay-arr_delay > 0.5)
 ```
 
-######1.7 Departed between midnight and 6am (inclusive)  
+######1.7 Departed between midnight and 6am (inclusive)   
 ```{r}
 filter(flights, dep_time <= 600 & dep_time >= 0 | dep_time == 2400)
 ```
@@ -107,7 +107,7 @@ filter(flights, FALSE & NA) # missing because there is no intersection between "
 NA * 0 # i don't know why this is missing...
 ```
 
-####5.3 Arrange  
+####5.3 Arrange()  
 ```{r}
 arrange(flights, year, month, day)
 arrange(flights, desc(arr_time))
@@ -125,14 +125,145 @@ arrange(flights, desc(dep_delay))
 arrange(flights, dep_time)
 ```
 
-####3.  
+#####3.   
 ```{r}
 arrange(flights, desc(distance/air_time))
 ```
 
-####4. 
+#####4.   
 ```{r}
 arrange(flights, desc(distance)) # longest
 arrange(flights, distance) # shortest
+```
+
+####5.4 Select()  
+```{r}
+select(flights, year, month, day)
+select(flights, year:day)
+select(flights, -(year:day))
+select(flights, starts_with("arr"))
+select(flights, ends_with("delay"))
+select(flights, contains("_"))
+rename(flights, tail_num = tailnum)
+select(flights, time_hour, air_time, everything())
+```
+
+####5.4.1  
+#####1. 
+```{r}
+select(flights, dep_time, dep_delay, arr_time, arr_delay)
+select(flights, -(year:day), -sched_dep_time, -sched_arr_time, -(carrier:time_hour))
+#somehow i can't think of anything else... 
+```
+
+#####2.  
+```{r}
+select(flights, arr_time, arr_time)# it only appears once. 
+```
+
+#####3.   
+```{r}
+vars <- c("year", "month", "day", "dep_delay", "arr_delay")
+#select(flights, vars) this doesn't run because the input vector is in characters, not in factors.
+select(flights, one_of(vars)) # one_of() makes the character inputs readable.
+```
+
+#####4.  
+```{r}
+select(flights, contains("TIME"))
+#select(flights, contains("TIME"), ignore.case = FALSE)
+# this command will turn off ignore.case. 
+```
+
+it is actually quite surprising to see that this command worked. I guess the default is case neutral. 
+
+####5.5 Mutate()
+```{r}
+flights_sml <- select(flights, 
+  year:day, 
+  ends_with("delay"), 
+  distance, 
+  air_time
+)
+mutate(flights_sml,
+  gain = arr_delay - dep_delay,
+  speed = distance / air_time * 60
+)
+mutate(flights_sml,
+  gain = arr_delay - dep_delay,
+  hours = air_time / 60,
+  gain_per_hour = gain / hours
+)
+transmute(flights,
+  gain = arr_delay - dep_delay,
+  hours = air_time / 60,
+  gain_per_hour = gain / hours
+)
+transmute(flights,
+  dep_time,
+  hour = dep_time %/% 100,
+  minute = dep_time %% 100
+)
+```
+
+####Exercise 5.5.2  
+#####1.   
+```{r}
+mutate(flights, 
+       dep_time_in.min = dep_time %/% 100 * 60 + dep_time %% 100, 
+       sched_dep_time_in.min = sched_dep_time %/% 100 * 60 + sched_dep_time %% 100)
+```
+
+#####2.   
+```{r}
+transmute(flights, air_time, new_air_time = arr_time - dep_time)
+#this is not right because the arr_time and dep_time are not in minutes. 
+#to translate arr_time and dep_time into minutes:
+transmute(flights, air_time, new_air_time = (arr_time %/% 100 * 60 + arr_time %% 100)-(dep_time %/% 100 * 60 + dep_time %% 100))
+#well even after I adjusted the units they still are not equal. I feel like the air_time was calculated wrong. 
+#to translate the new_air_time into "hour:minute" format:
+transmute(flights, air_time, new_air_time = ((arr_time %/% 100 * 60 + arr_time %% 100)-(dep_time %/% 100 * 60 + dep_time %% 100)) %/% 60 * 100 + ((arr_time %/% 100 * 60 + arr_time %% 100)-(dep_time %/% 100 * 60 + dep_time %% 100)) %% 60)
+#nope they are still not equal. 
+```
+
+#####3.  
+```{r}
+transmute(flights, dep_time, sched_dep_time, dep_delay)
+#I think dep_delay = dep_time (when expressed in minutes) - sched_dep_time (in minutes). To prove that:
+flt_delay = transmute(flights, dep_time, sched_dep_time, dep_delay, new_dep_delay = (dep_time %/% 100 * 60 + dep_time %% 100) - (sched_dep_time %/% 100 * 60 + sched_dep_time %% 100), TorF = dep_delay == new_dep_delay)
+flt_delay
+table(flt_delay$TorF)
+# there are a few that are not exactly the same. Upon looking at them we can see that these involve change of day. It would be difficult to fix these. 
+```
+
+#####4.  
+```{r}
+arrange(flights, desc(min_rank(flights$dep_delay)))
+?min_rank()
+# the documentation states that ties.method is "min". I couldn't really find what that means...
+```
+
+#####5.  
+```{r}
+1:3 + 1:10
+# c(1:3) got wrapped around 3.3 times to match the length of c(1:10)
+```
+
+#####6.  
+```{r}
+x = .5
+y = 2
+cos(x)
+sin(x)
+tan(x)
+
+acos(x)
+asin(x)
+atan(x)
+atan2(y, x)
+
+cospi(x)
+sinpi(x)
+tanpi(x)
 ```
 
