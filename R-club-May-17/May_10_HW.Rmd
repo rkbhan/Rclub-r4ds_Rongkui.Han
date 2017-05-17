@@ -1,0 +1,355 @@
+---
+title: "May_17_HW"
+author: "Rongkui Han"
+date: "May 16, 2017"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+####5.6 Summarize()  
+```{r}
+library(tidyverse)
+library(nycflights13)
+summarise(flights, delay = mean(dep_delay, na.rm = TRUE))
+by_day = group_by(flights, year, month, day)
+summarise(by_day, delay = mean(dep_delay, na.rm = TRUE))
+#I like this. It will be very useful for analyzing my data. 
+```
+
+#####5.6.1 Combining multiple operations with the pipe  
+```{r}
+by_dest = group_by(flights, dest)
+delay = summarise(by_dest, 
+                  count = n(), #this counts the # of entries in each group. Might be useful. 
+                  dist = mean(distance, na.rm = TRUE), 
+                  delay = mean(arr_delay, na.rm = TRUE)
+)
+delay = filter(delay, count > 20, dest != "HNL")
+ggplot(data = delay, mapping = aes(x = dist, y = delay)) +
+  geom_point(aes(size = count), alpha = 1/3) +
+  geom_smooth(se = FALSE)
+```
+
+I'm curious what the plot would look like without the grouping.  
+```{r}
+ggplot(data = flights, mapping = aes(x = distance, y = arr_delay)) +
+  geom_point(alpha = 1/3) +
+  geom_smooth(se = FALSE)
+```
+
+Oh.  
+
+Using pipe "%>%": 
+```{r}
+delays <- flights %>% 
+  group_by(dest) %>% 
+  summarise(
+    count = n(),
+    dist = mean(distance, na.rm = TRUE),
+    delay = mean(arr_delay, na.rm = TRUE)
+  ) %>% 
+  filter(count > 20, dest != "HNL")
+```
+
+#####5.6.3 Counts 
+Whenever you do any aggregation, it's always a good idea to include either a count (n()) or a count of non-missing value (sum(!is.na(x))). 
+```{r}
+not_cancelled = flights %>%
+  filter(!is.na(dep_delay), !is.na(arr_delay)) 
+not_cancelled %>%
+  group_by(year, month, day) %>%
+  summarise(mean = mean(dep_delay))
+delays = not_cancelled %>%  
+  group_by(tailnum) %>%
+  summarise(delay = mean(arr_delay))
+ggplot(data = delays, mapping = aes(x = delay))+
+  geom_freqpoly(binwidth = 10)
+```
+
+```{r}
+delays = not_cancelled %>%
+  group_by(tailnum) %>%
+  summarise(delay = mean(arr_delay, na.rm = TRUE), n = n())
+ggplot(data = delays, mapping = aes(x = n, y = delay)) +
+  geom_point(alpha = 1/10)
+```
+
+```{r}
+delays %>%
+  filter(n>25) %>%
+  ggplot(mapping = aes(x = n, y = delay)) +
+  geom_point(alpha = 1/10)
+```
+
+Battind example:  
+```{r}
+library(Lahman)
+batting = as_tibble(Lahman::Batting)
+batter = batting %>%
+  group_by(playerID) %>%
+  summarise(
+    ba = sum(H, na.rm = TRUE)/sum(AB, na.rm = TRUE),
+    ab = sum(AB, na.rm = TRUE)
+  )
+#comparing before and after filtering out the groups with too few data points:
+batter %>%
+  ggplot(mapping = aes(x = ab, y = ba)) +
+    geom_point(alpha = 1/3) +
+    geom_smooth(se = FALSE)
+batter %>%
+  filter(ab > 100) %>%
+  ggplot(mapping = aes(x = ab, y = ba)) +
+    geom_point(alpha = 1/3) +
+    geom_smooth(se = FALSE)
+```
+Measuring spread:  
+```{r}
+not_cancelled %>%
+  group_by(year, month, day) %>%
+  summarise(
+    avg_delay1 = mean(arr_delay),
+    avg_delay2 = mean(arr_delay[arr_delay > 0])
+  )
+```
+
+```{r}
+not_cancelled %>%
+  group_by(dest) %>%
+  summarise(distance_sd = sd(distance)) %>%
+  arrange(desc(distance_sd)) #Man I'm lovin' it. This looks super useful. 
+``` 
+Ranking:   
+```{r}
+not_cancelled %>%
+  group_by(year, month, day) %>%
+  summarise(
+    first = min(dep_time),
+    last = max(dep_time)
+  )
+```
+
+Measuring position:  
+```{r}
+not_cancelled %>%
+  group_by(year, month, day) %>%
+  summarise(
+    first_dep = first(dep_time),
+    last_dep = last(dep_time)
+  )
+```
+
+first() and last() look the same as min() and max()... but that is just because within each group the data is organized by departure time. first(), nth() and last() are supposed to return the nth element within each group, regardless of the value. Let's see if arrange() can change the output.   
+
+```{r}
+not_cancelled %>%
+  arrange(desc(dep_time)) %>%
+  group_by(year, month, day) %>%
+  summarise(
+    last_dep2 = first(dep_time),
+    last_eighth_dep2 = nth(dep_time,8)
+  )
+```
+
+```{r}
+not_cancelled %>%
+  group_by(year, month, day) %>%
+  summarise(carriers = n_distinct(carrier)) %>%
+  arrange(desc(carriers))
+```
+
+```{r}
+not_cancelled %>%
+  count(dest)
+#how do you arrange this table by n then?
+not_cancelled %>%
+  group_by(dest) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n)) #Yay figured it out!
+```
+
+The "wt =" option in count() function is rather interesting. You can multiple each n (1) by the weight and get a sum total of a column within each group. For example:  
+```{r}
+weighted = not_cancelled %>%
+  count(tailnum, wt = distance)
+weighted %>%
+  arrange(n) # Guess I just really like to arrange things. 
+#Qrious: it looks like count() automatically generates a column named "n". Can you rename this column without a separate command?
+```
+
+```{r}
+not_cancelled %>%
+  group_by(year, month, day) %>%
+  summarise(n_early = sum(dep_time,50)) %>%
+  arrange(desc(n_early))
+not_cancelled %>%
+  group_by(year, month, day) %>%
+  summarise(hour_perc = mean(arr_delay > 60)) # this mean(logical command) part is very interesting. it is calculating the mean of a bunch of 1's and 0,s. In other words, this is a fast way of calculating percentages. 
+```
+
+#####5.6.5  
+```{r}
+daily = group_by(flights, year, month, day)
+dim(daily)
+dim(flights) # the two have no visible difference.
+(per_day = summarise(daily, flight.num = n()))
+```
+
+#####5.6.6 Ungrouping  
+```{r}
+daily %>%
+  ungroup() %>%
+  summarise(flight.num = n()) #Everything is in one big group now. 
+```
+
+#####5.6.7 Exercise  
+######1.   
+```{r}
+##This scenario makes me think about accessing the spread of arrival time.
+not_cancelled %>%
+  group_by(tailnum) %>%
+  summarise(
+    avg_delay = mean(arr_delay, na.rm = TRUE), 
+    spread_delay = sd(arr_delay, na.rm = TRUE), 
+    perc_delay = mean(arr_delay > 0),
+    avg_delay_when_delayed = mean(arr_delay[arr_delay > 0], na.rm = TRUE)
+    )
+# I'm out of ideas...
+```
+
+######2.  
+```{r}
+not_cancelled %>%
+  count(dest)
+#Alternative:
+not_cancelled %>%
+  group_by(dest) %>%
+  summarise(n = n())
+
+not_cancelled %>%
+  count(tailnum, wt = distance)
+#Alternative:
+not_cancelled %>%
+  group_by(tailnum) %>%
+  summarise(total = sum(distance))
+```
+
+######3.  
+```{r}
+# I guess it is most important tha air_time is NA?
+not.cancelled = flights %>%
+  filter(!is.na(air_time))
+dim(not_cancelled)
+dim(not.cancelled)
+# nope i dont think this made a difference.
+```
+
+######4.  
+```{r}
+q4 = flights %>%
+  group_by(year, month, day) %>%
+  summarise(
+    daily_cancelled = sum(!is.na(air_time)), 
+    cancelled_perc = mean(is.na(air_time)), 
+    avg_delay = mean(arr_delay, na.rm = TRUE))
+ggplot(q4, mapping = aes(x = cancelled_perc, y = avg_delay)) +
+  geom_point(alpha = 1/3) +
+  geom_smooth(se = FALSE)
+```
+
+Looks like there is a positive linear correlation between percentage of flight cancelled and average delay time when the percentage of flight cancelled is under 20%.  
+
+######5.  
+```{r}
+flights %>% 
+  group_by(carrier, dest) %>% 
+  summarise(n = n(), avg_delay = mean(arr_delay, na.rm = TRUE)) %>%
+  arrange(desc(avg_delay))
+```
+
+######6.  
+```{r}
+flights %>%
+  group_by(carrier) %>%
+  count(dest = sort(dest))
+```
+
+Looks like the sort() argument splits each group further into subsets by a different category. I guess we can use this when we don't want to actually subset the large dataset into small subsets?  
+
+####5.7 Grouped mutates and filters
+```{r}
+flights_sml <- select(flights, year:day, ends_with("delay"), distance, air_time)
+flights_sml %>% 
+  group_by(year, month, day) %>%
+  filter(rank(desc(arr_delay)) < 10) #find out the top 10 delayed flight in each day
+popular_dests <- flights %>% 
+  group_by(dest) %>% 
+  filter(n() > 365)
+popular_dests # find out groups above certain threshold
+
+popular_dests %>% 
+  filter(arr_delay > 0) %>% 
+  mutate(prop_delay = arr_delay / sum(arr_delay)) %>% 
+  select(year:day, dest, arr_delay, prop_delay) # this is kina weird... standardizing each entry to group mean. 
+```
+
+#####5.7.1
+######1. In general, you can use mutate() and filter () to generate statistics within each group, and statistics of each group in respect to the whole dataset. 
+
+######2.I'm not sure if this is what the question is asking for...
+```{r}
+not_cancelled %>%
+  group_by(tailnum) %>%
+  summarise(prop_delay = mean(arr_delay, na.rm = TRUE)) %>%
+  arrange(desc(prop_delay))
+```
+
+######3.  
+```{r}
+not_cancelled %>%
+  group_by(hour) %>%
+  summarise(avg_delay = mean(arr_delay, na.rm = TRUE)) %>%
+  arrange(avg_delay)
+```
+
+I should leave between 5am and 8am if I want to avoid delay.  
+
+######4.  
+```{r}
+not_cancelled %>%
+  group_by(dest) %>%
+  transmute(total_delay = sum(arr_delay), prop_delay = arr_delay / total_delay)
+```
+
+######5.  
+```{r}
+not_cancelled %>%
+  group_by(year, month, day) %>%
+  arrange(dep_time) 
+```
+
+Nope I can't figure out how to do this.
+
+######6.  
+```{r}
+not_cancelled %>%
+  ungroup() %>%
+  group_by(dest) %>%
+  mutate(mean_air_time = mean(air_time, na.rm = TRUE), perc_air_time = air_time/mean_air_time) %>%
+  arrange(perc_air_time)
+```
+
+######7.  
+```{r}
+not_cancelled %>%
+  group_by(dest)
+
+```
+
+Can't figure it out.
+
+```{r}
+not_cancelled %>%
+  group_by(tailnum)
+```
+
