@@ -353,11 +353,8 @@ not_cancelled %>%
 ```{r}
 not_cancelled %>%
   group_by(dest) %>%
-  count(carrier) %>%
-  summarise(num.carrier = n()) %>% # i dont know why this worked. 
+  summarise(num.carrier = n_distinct(carrier)) %>% 
   filter(num.carrier > 2)
-
-
 ```
 
 
