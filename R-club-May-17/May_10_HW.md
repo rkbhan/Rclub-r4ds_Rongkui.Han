@@ -743,6 +743,17 @@ dim(not.cancelled)
 
 ```r
 # nope i dont think this made a difference.
+notcancelled = flights %>%
+  filter(!is.na(dep_delay) | is.na(arr_delay))
+dim(notcancelled)
+```
+
+```
+## [1] 336776     19
+```
+
+```r
+# maybe this what we were looking for?
 ```
 
 ######4.  
@@ -751,7 +762,6 @@ dim(not.cancelled)
 q4 = flights %>%
   group_by(year, month, day) %>%
   summarise(
-    daily_cancelled = sum(!is.na(air_time)), 
     cancelled_perc = mean(is.na(air_time)), 
     avg_delay = mean(arr_delay, na.rm = TRUE))
 ggplot(q4, mapping = aes(x = cancelled_perc, y = avg_delay)) +
@@ -770,30 +780,18 @@ Looks like there is a positive linear correlation between percentage of flight c
 ######5.  
 
 ```r
-flights %>% 
+worst_carrier = flights %>% 
   group_by(carrier, dest) %>% 
-  summarise(n = n(), avg_delay = mean(arr_delay, na.rm = TRUE)) %>%
-  arrange(desc(avg_delay))
+  mutate(n = n(), avg_delay = mean(arr_delay, na.rm = TRUE))
+ggplot(worst_carrier, mapping = aes(x = dest, y = avg_delay)) +
+  geom_point(aes(color = carrier))
 ```
 
 ```
-## Source: local data frame [314 x 4]
-## Groups: carrier [16]
-## 
-##    carrier  dest     n avg_delay
-##      <chr> <chr> <int>     <dbl>
-## 1       UA   STL     2 110.00000
-## 2       OO   ORD     1 107.00000
-## 3       OO   DTW     2  68.50000
-## 4       UA   RDU     1  56.00000
-## 5       EV   CAE   113  42.80583
-## 6       EV   TYS   323  41.15016
-## 7       EV   PBI     6  40.66667
-## 8       EV   TUL   315  33.65986
-## 9       EV   OKC   346  30.61905
-## 10      UA   JAC    23  29.89474
-## # ... with 304 more rows
+## Warning: Removed 2 rows containing missing values (geom_point).
 ```
+
+![](May_10_HW_files/figure-html/unnamed-chunk-24-1.png)<!-- -->
 
 ######6.  
 
@@ -910,65 +908,49 @@ popular_dests %>%
 #####5.7.1
 ######1. In general, you can use mutate() and filter () to generate statistics within each group, and statistics of each group in respect to the whole dataset. 
 
-######2.I'm not sure if this is what the question is asking for...
+######2.I'm not sure if this is what the question is asking for... this is filtering for the most delayed flight for each tail number. 
 
 ```r
 not_cancelled %>%
   group_by(tailnum) %>%
-  summarise(prop_delay = mean(arr_delay, na.rm = TRUE)) %>%
-  arrange(desc(prop_delay))
+  mutate(avg_delay = mean(arr_delay, na.rm  = TRUE)) %>%
+  filter(rank(desc(avg_delay)) < 5)
 ```
 
 ```
-## # A tibble: 4,037 × 2
-##    tailnum prop_delay
-##      <chr>      <dbl>
-## 1   N844MH   320.0000
-## 2   N911DA   294.0000
-## 3   N922EV   276.0000
-## 4   N587NW   264.0000
-## 5   N851NW   219.0000
-## 6   N928DN   201.0000
-## 7   N7715E   188.0000
-## 8   N654UA   185.0000
-## 9   N665MQ   174.6667
-## 10  N427SW   157.0000
-## # ... with 4,027 more rows
+## Source: local data frame [2,032 x 20]
+## Groups: tailnum [589]
+## 
+##     year month   day dep_time sched_dep_time dep_delay arr_time
+##    <int> <int> <int>    <int>          <int>     <dbl>    <int>
+## 1   2013     1     1      622            630        -8     1017
+## 2   2013     1     1      629            630        -1      824
+## 3   2013     1     1      724            725        -1     1020
+## 4   2013     1     1     1029           1030        -1     1427
+## 5   2013     1     1     1059           1100        -1     1201
+## 6   2013     1     1     1356           1350         6     1659
+## 7   2013     1     1     1825           1829        -4     2046
+## 8   2013     1     1     2058           2100        -2     2235
+## 9   2013     1     2      626            630        -4      850
+## 10  2013     1     2      629            630        -1     1010
+## # ... with 2,022 more rows, and 13 more variables: sched_arr_time <int>,
+## #   arr_delay <dbl>, carrier <chr>, flight <int>, tailnum <chr>,
+## #   origin <chr>, dest <chr>, air_time <dbl>, distance <dbl>, hour <dbl>,
+## #   minute <dbl>, time_hour <dttm>, avg_delay <dbl>
 ```
 
 ######3.  
 
 ```r
-not_cancelled %>%
+booking = not_cancelled %>%
   group_by(hour) %>%
-  summarise(avg_delay = mean(arr_delay, na.rm = TRUE)) %>%
+  mutate(avg_delay = mean(arr_delay, na.rm = TRUE)) %>%
   arrange(avg_delay)
+ggplot(booking, mapping = aes(x = hour, y = avg_delay)) +
+  geom_point()
 ```
 
-```
-## # A tibble: 19 × 2
-##     hour  avg_delay
-##    <dbl>      <dbl>
-## 1      7 -5.3044716
-## 2      5 -4.7969072
-## 3      6 -3.3844854
-## 4      9 -1.4514074
-## 5      8 -1.1132266
-## 6     10  0.9539401
-## 7     11  1.4819300
-## 8     12  3.4890104
-## 9     13  6.5447397
-## 10    14  9.1976501
-## 11    23 11.7552783
-## 12    15 12.3241920
-## 13    16 12.5976412
-## 14    18 14.7887244
-## 15    22 15.9671618
-## 16    17 16.0402670
-## 17    19 16.6558736
-## 18    20 16.6761098
-## 19    21 18.3869371
-```
+![](May_10_HW_files/figure-html/unnamed-chunk-28-1.png)<!-- -->
 
 I should leave between 5am and 8am if I want to avoid delay.  
 
@@ -1006,34 +988,22 @@ not_cancelled %>%
 ######5.  
 
 ```r
-not_cancelled %>%
+dep_ranked = not_cancelled %>%
   group_by(year, month, day) %>%
-  arrange(dep_time) 
+  mutate(dep_rank = rank(dep_time)) %>%
+  arrange(year, month, day, dep_rank)
+
+ggplot(dep_ranked, mapping = aes(x = dep_delay, y = lag(dep_delay))) + 
+  geom_point(alpha = 1/3)
 ```
 
 ```
-## Source: local data frame [327,346 x 19]
-## Groups: year, month, day [365]
-## 
-##     year month   day dep_time sched_dep_time dep_delay arr_time
-##    <int> <int> <int>    <int>          <int>     <dbl>    <int>
-## 1   2013     1    13        1           2249        72      108
-## 2   2013     1    31        1           2100       181      124
-## 3   2013    11    13        1           2359         2      442
-## 4   2013    12    16        1           2359         2      447
-## 5   2013    12    20        1           2359         2      430
-## 6   2013    12    26        1           2359         2      437
-## 7   2013    12    30        1           2359         2      441
-## 8   2013     2    11        1           2100       181      111
-## 9   2013     2    24        1           2245        76      121
-## 10  2013     3     8        1           2355         6      431
-## # ... with 327,336 more rows, and 12 more variables: sched_arr_time <int>,
-## #   arr_delay <dbl>, carrier <chr>, flight <int>, tailnum <chr>,
-## #   origin <chr>, dest <chr>, air_time <dbl>, distance <dbl>, hour <dbl>,
-## #   minute <dbl>, time_hour <dttm>
+## Warning: Removed 1 rows containing missing values (geom_point).
 ```
 
-Nope I can't figure out how to do this.
+![](May_10_HW_files/figure-html/unnamed-chunk-30-1.png)<!-- -->
+
+There is not an obvious linear relationship. 
 
 ######6.  
 
@@ -1072,58 +1042,77 @@ not_cancelled %>%
 
 ```r
 not_cancelled %>%
-  group_by(dest)
+  group_by(dest) %>%
+  count(carrier) %>%
+  summarise(num.carrier = n()) %>% # i dont know why this worked. 
+  filter(num.carrier > 2)
 ```
 
 ```
-## Source: local data frame [327,346 x 19]
-## Groups: dest [104]
-## 
-##     year month   day dep_time sched_dep_time dep_delay arr_time
-##    <int> <int> <int>    <int>          <int>     <dbl>    <int>
-## 1   2013     1     1      517            515         2      830
-## 2   2013     1     1      533            529         4      850
-## 3   2013     1     1      542            540         2      923
-## 4   2013     1     1      544            545        -1     1004
-## 5   2013     1     1      554            600        -6      812
-## 6   2013     1     1      554            558        -4      740
-## 7   2013     1     1      555            600        -5      913
-## 8   2013     1     1      557            600        -3      709
-## 9   2013     1     1      557            600        -3      838
-## 10  2013     1     1      558            600        -2      753
-## # ... with 327,336 more rows, and 12 more variables: sched_arr_time <int>,
-## #   arr_delay <dbl>, carrier <chr>, flight <int>, tailnum <chr>,
-## #   origin <chr>, dest <chr>, air_time <dbl>, distance <dbl>, hour <dbl>,
-## #   minute <dbl>, time_hour <dttm>
+## # A tibble: 52 × 2
+##     dest num.carrier
+##    <chr>       <int>
+## 1    ATL           7
+## 2    AUS           6
+## 3    BNA           5
+## 4    BOS           7
+## 5    BTV           3
+## 6    BUF           4
+## 7    BWI           4
+## 8    CHS           4
+## 9    CLE           5
+## 10   CLT           7
+## # ... with 42 more rows
 ```
 
-Can't figure it out.
 
+######8.  
 
 ```r
 not_cancelled %>%
-  group_by(tailnum)
+  group_by(tailnum) %>%
+  summarise(n = n())
 ```
 
 ```
-## Source: local data frame [327,346 x 19]
-## Groups: tailnum [4,037]
-## 
-##     year month   day dep_time sched_dep_time dep_delay arr_time
-##    <int> <int> <int>    <int>          <int>     <dbl>    <int>
-## 1   2013     1     1      517            515         2      830
-## 2   2013     1     1      533            529         4      850
-## 3   2013     1     1      542            540         2      923
-## 4   2013     1     1      544            545        -1     1004
-## 5   2013     1     1      554            600        -6      812
-## 6   2013     1     1      554            558        -4      740
-## 7   2013     1     1      555            600        -5      913
-## 8   2013     1     1      557            600        -3      709
-## 9   2013     1     1      557            600        -3      838
-## 10  2013     1     1      558            600        -2      753
-## # ... with 327,336 more rows, and 12 more variables: sched_arr_time <int>,
-## #   arr_delay <dbl>, carrier <chr>, flight <int>, tailnum <chr>,
-## #   origin <chr>, dest <chr>, air_time <dbl>, distance <dbl>, hour <dbl>,
-## #   minute <dbl>, time_hour <dttm>
+## # A tibble: 4,037 × 2
+##    tailnum     n
+##      <chr> <int>
+## 1   D942DN     4
+## 2   N0EGMQ   352
+## 3   N10156   145
+## 4   N102UW    48
+## 5   N103US    46
+## 6   N104UW    46
+## 7   N10575   269
+## 8   N105UW    45
+## 9   N107US    41
+## 10  N108UW    60
+## # ... with 4,027 more rows
+```
+
+```r
+not_cancelled %>%
+  group_by(tailnum) %>%
+  arrange(tailnum, year, month, day, hour, minute) %>%
+  filter(arr_delay <= 1) %>%
+  summarise(n = n())
+```
+
+```
+## # A tibble: 3,936 × 2
+##    tailnum     n
+##      <chr> <int>
+## 1   D942DN     1
+## 2   N0EGMQ   200
+## 3   N10156    72
+## 4   N102UW    34
+## 5   N103US    34
+## 6   N104UW    34
+## 7   N10575   144
+## 8   N105UW    31
+## 9   N107US    31
+## 10  N108UW    40
+## # ... with 3,926 more rows
 ```
 
