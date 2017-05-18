@@ -373,3 +373,9 @@ not_cancelled %>%
   summarise(n = n())
 ```
 
+###6. 
+shorthands:
+command + shift + m = %>% 
+control + shift + 1/2/3/4 = full screen one of the four concoles in R studio
+command + shift + n = new rmd file
+
