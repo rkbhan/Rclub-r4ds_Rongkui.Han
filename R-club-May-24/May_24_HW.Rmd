@@ -1,0 +1,147 @@
+---
+title: "R_club_HW5"
+author: "Rongkui Han"
+date: "May 24, 2017"
+output: 
+  html_document: 
+    keep_md: yes
+---
+####7.1.1 Prerequisites   
+```{r}
+library(tidyverse)
+```
+
+####7.3 Variation  
+#####7.3.1 Visualising distributions  
+```{r}
+ggplot(data = diamonds) +
+  geom_bar(mapping = aes(x = cut))
+diamonds %>%
+  count(cut)
+ggplot(data = diamonds) +
+  geom_histogram(mapping= aes(x = carat), binwidth = 0.5)
+diamonds %>%
+  count(cut_width(carat,0.5))
+smaller = diamonds %>%
+  filter(carat < 3)
+ggplot(data = smaller, mapping = aes(x = carat)) +
+  geom_histogram(binwidth = 0.1)
+```
+
+To overlay multiple histogram-type grams, we can use geom_freqpoly():
+```{r}
+ggplot(data = smaller, mapping = aes(x = carat, colour = cut)) +
+  geom_freqpoly(binwidth = 0.1)
+#let's try something else:
+ggplot(data = smaller, mapping  = aes(x = carat)) +
+  geom_freqpoly(binwidth = 0.5, linetype = 02) +
+  geom_freqpoly(binwidth = 0.1) #interesting...
+```
+
+#####7.3.2 Typical values  
+```{r}
+ggplot(data = smaller, mapping= aes(x = carat, fill = cut)) +
+  geom_bar(binwidth = 0.01) #added colors to make it more pleasing to the eyes...
+```
+
+```{r}
+ggplot(data = faithful, mapping = aes(x = eruptions)) +
+  geom_histogram(binwidth = 0.25)
+```
+
+```{r}
+ggplot(diamonds) +
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5)
+ggplot(diamonds) +
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5) +
+  coord_cartesian(ylim = c(0,50))
+unusual = diamonds %>%
+  filter(y<3 | y>20) %>%
+  select(price, x,y,z) %>%
+  arrange(y)
+unusual
+```
+
+#####7.3.4 Exercise  
+1. Explore the distribution of each of the x, y, and z variables in diamonds. What do you learn? Think about a diamond and how you might decide which dimension is the length, width, and depth.  
+```{r}
+ggplot(data = diamonds, mapping = aes(x=x)) +
+  geom_bar(binwidth = 0.25)
+ggplot(data = diamonds, mapping = aes(x=y)) +
+  geom_bar(binwidth = 0.25)
+usual.y = diamonds %>%
+  filter(y<20 & y>3)
+ggplot(data = usual.y, mapping = aes(x=y)) +
+  geom_bar(binwidth = 0.25)
+ggplot(data = diamonds, mapping = aes(x=z)) +
+  geom_bar(binwidth = 0.25)
+ggplot(data = diamonds, mapping = aes(x=z)) +
+  geom_bar(binwidth = 0.25) +
+  coord_cartesian(ylim = c(0,50))
+unusual.z = diamonds %>%
+  filter(z<1 | z>10) %>%
+  select(price, x,y,z)
+unusual.z
+usual.z = diamonds %>%
+  filter(z>1 & z<10)
+ggplot(data = usual.z, mapping = aes(x=z)) +
+  geom_bar(binwidth = 0.1)
+```
+
+They all have an interesting almost bi-model distribution.   
+
+2. Explore the distribution of price. Do you discover anything unusual or surprising? (Hint: Carefully think about the binwidth and make sure you try a wide range of values.)  
+```{r}
+ggplot(data = diamonds, mapping = aes(x = price)) +
+  geom_histogram(binwidth = 500)
+ggplot(data = diamonds, mapping = aes(x = price)) +
+  geom_histogram(binwidth = 100) #There is a weird gap around $1500
+ggplot(data = diamonds, mapping = aes(x = price)) +
+  geom_histogram(binwidth = 10) #Yep there is a weird gap. 
+```
+
+3. How many diamonds are 0.99 carat? How many are 1 carat? What do you think is the cause of the difference?  
+```{r}
+diamonds %>%
+  count(carat == 0.99)
+diamonds %>%
+  count(carat ==1.00)
+```
+
+Only 23 diamonds in this dataset weigh 0.99 carat, but more than 1500 diamonds are exactly 1.00 carat. I think people have a strong preference/there is a big demand for 1.00 carat diamonds.   
+
+4. Compare and contrast coord_cartesian() vs xlim() or ylim() when zooming in on a histogram. What happens if you leave binwidth unset? What happens if you try and zoom so only half a bar shows?  
+```{r}
+ggplot(data = diamonds, mapping = aes(x = price)) +
+  geom_histogram(binwidth = 10) +
+  coord_cartesian(xlim = c(1000,2000))
+ggplot(data = diamonds, mapping = aes(x = price), xlim = c(1000,2000)) +
+  geom_histogram(binwidth = 10) #I have no idea what this xlim did. 
+ggplot(data = diamonds, mapping = aes(x = price), xlim = c(1000,2000)) +
+  geom_histogram() #The default bin width is a weird 625
+ggplot(data = diamonds, mapping = aes(x = price), ylim = c(0,100)) +
+  geom_histogram(binwidth = 10) #again it didn't do nothing...
+ggplot(data = diamonds, mapping = aes(x = price), ylim = c(0,100)) +
+  geom_histogram() #bin width = 30
+```
+
+I don't understand what it means by "only half a bar shows".
+
+####7.4 Missing values  
+Bad example: this is example of bad filtering that might leave you with no data points to work with:  
+```{r}
+diamonds2 = diamonds %>%
+  filter(between(y,3,20))
+```
+
+Good example:  
+```{r}
+diamonds2 = diamonds %>%
+  mutate(y = ifelse( y < 3 | y > 20, NA, y)) # basically changes y value to NA if y is lower than 3 or bigger than 20.
+ggplot(data = diamonds2, mapping = aes(x = x, y = y)) +
+  geom_point()
+ggplot(data = diamonds2, mapping = aes(x = x, y = y)) +
+  geom_point(na.rm = TRUE)
+```
+
+
