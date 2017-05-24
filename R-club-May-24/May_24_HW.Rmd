@@ -116,13 +116,16 @@ ggplot(data = diamonds, mapping = aes(x = price)) +
   geom_histogram(binwidth = 10) +
   coord_cartesian(xlim = c(1000,2000))
 ggplot(data = diamonds, mapping = aes(x = price), xlim = c(1000,2000)) +
-  geom_histogram(binwidth = 10) #I have no idea what this xlim did. 
-ggplot(data = diamonds, mapping = aes(x = price), xlim = c(1000,2000)) +
-  geom_histogram() #The default bin width is a weird 625
+  geom_histogram(binwidth = 10) +
+  xlim(c(1000,2000))
+ggplot(data = diamonds, mapping = aes(x = price)) +
+  geom_histogram() +
+  xlim(c(1000,2000)) #The default bin number is 30
 ggplot(data = diamonds, mapping = aes(x = price), ylim = c(0,100)) +
-  geom_histogram(binwidth = 10) #again it didn't do nothing...
+  geom_histogram(binwidth = 10) + 
+  ylim(c(0,20)) #It eliminates all bars that have y higher than 20 (!!) Dangerous!!
 ggplot(data = diamonds, mapping = aes(x = price), ylim = c(0,100)) +
-  geom_histogram() #bin width = 30
+  geom_histogram() #bin number = 30
 ```
 
 I don't understand what it means by "only half a bar shows".
