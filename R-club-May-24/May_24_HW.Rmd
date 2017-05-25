@@ -163,13 +163,17 @@ flights %>%
 #####7.4.1 Exercise
 1. What happens to missing values in a histogram? What happens to missing values in a bar chart? Why is there a difference?
 ```{r}
-ggplot(data = diamonds2, mapping = aes(x = x)) +
-  geom_bar()
-ggplot(data = diamonds2, mapping = aes(x = x)) +
-  geom_histogram()
+diamonds %>%
+  mutate(price = ifelse( price < 100 | price > 10000, NA, price)) %>%
+  ggplot(mapping = aes(x = price)) +
+  geom_bar(binwidth = 100)
+diamonds %>%
+  mutate(price = ifelse( price < 100 | price > 10000, NA, price)) %>%
+  ggplot(mapping = aes(x = price)) +
+  geom_histogram(binwidth = 100) #The histogram removed the NA reads. 
 ```
 
-I don't think I understand how to check the questions. fromt he documentation it looks likt the deault setting for both functions are na.rm = FALSE.
+The histogram removed the NA's but the box plot didn't. If you have a categorecal data, the NA is going to become a new category. 
 
 2. What does na.rm = TRUE do in mean() and sum()?
 ```{r}
@@ -256,7 +260,7 @@ X and y axis need to be flipped for meaningful output. Other than that there is 
 ggplot(data = diamonds, aes(x = cut, y = price)) +
   geom_violin()
 ggplot(data = diamonds, aes(x = price, y = ..density..)) +
-  facet_wrap(~cut, nrow = 1) +
+  facet_wrap(~cut, nrow = 5) +
   geom_histogram()
 ggplot(data = diamonds, mapping = aes(x = price, color = cut, y = ..density..)) +
   geom_freqpoly()
@@ -288,6 +292,16 @@ diamonds %>%
 
 #####7.5.2.1 Exercises  
 1. How could you rescale the count dataset above to more clearly show the distribution of cut within colour, or colour within cut?   
+```{r}
+diamonds %>% 
+  count(color, cut) %>%  
+  ggplot(mapping = aes(x = color, y = cut)) +
+    geom_tile(mapping = aes(fill = n)) +
+    scale_fill_gradient2(mid = "purple", high = "yellow")
+ggplot(data = diamonds, mapping = aes(x = color)) +
+  geom_bar(mapping = aes(fill = cut))
+```
+
 *No I don't know.*  
 
 2. Use geom_tile() together with dplyr to explore how average flight delays vary by destination and month of year. What makes the plot difficult to read? How could you improve it?  
@@ -338,7 +352,8 @@ Cut width can overrepresent certain group by allocating the same width on the x-
 2. Visualise the distribution of carat, partitioned by price.  
 ```{r}
 ggplot(data = diamonds, mapping = aes(x = price, y = carat)) + 
-  geom_boxplot(mapping = aes(group = cut_width(price, 500)))
+  geom_boxplot(mapping = aes(group = cut_width(price, 500), varwidth = TRUE))
+               
 ggplot(data = diamonds, mapping = aes(x = price, y = carat)) + 
   geom_boxplot(mapping = aes(group = cut_number(price, 20)))
 ```
@@ -352,6 +367,8 @@ small = diamonds %>%
 ggplot(mapping = aes(x=price, y = ..density..)) +
   geom_freqpoly(data = large, linetype = 2) +
   geom_freqpoly(data = small)
+ggplot(data = diamonds, mapping = aes(x = price, y = ..density..)) +
+  geom_freqpoly(mapping = aes(color = cut_width(carat, 0.1)))
 ```
 
 Should I be surprize?   
@@ -360,7 +377,8 @@ Should I be surprize?
 ```{r}
 ggplot(data = diamonds, mapping = aes(x = carat, y = price)) +
   geom_boxplot(mapping = aes(group = cut_width(carat,1))) +
-  geom_smooth(se = FALSE, mapping = aes(colour = cut))
+  geom_smooth(se = FALSE, mapping = aes(colour = cut)) +
+  facet_wrap(~color, nrow = 3)
 ```
 
 5. Why is a scatterplot a better display than a binned plot for find odd x-y combinations?
