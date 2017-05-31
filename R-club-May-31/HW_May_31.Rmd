@@ -46,7 +46,7 @@ diamonds %>%
 ```{r}
 as_tibble(iris)
 tibble(x = 1:5, y = 1, z = x^2 + y)
-tibble(':)' = "smile", ' ' = "space", '2000' = "number")
+tibble(`:)` = "smile", ` ` = "space", `2000` = "number")
 tribble(~x, ~y, ~z, 
         "a",2,3.6,
         "b",1,8.5) #-_- this is kinda confusing. 
@@ -122,8 +122,13 @@ the df$x command gave me the same output as df[,"xyz"]. I guess the "x"" was goo
 3. If you have the name of a vairable stored in an object, e.g. var = "mpg", how can you extract the reference variable from a tibble?
 ```{r}
 tbcars = as.tibble(mtcars)
-var = "mpg"
-tbcars[[var]]
+var = c("mpg","disp")
+#method 1
+tbcars[var] #returns a tibble
+#tbcars[[var]] #returns a vector, but only works with one element in "var"
+#method 2 -- Julin
+get(var, tbcars) #get is a base function, not from tidyverse
+# select(tbcars, matches(var)) #works when var has one element. Does partial match. Use oneof() for exact matching. 
 as.data.frame(mtcars)[,var]
 ```
 
@@ -136,10 +141,17 @@ c. Creating a new column called 3 which is 2 divided by 1;
 d. Renaming the columns to one, two and three.  
 ```{r}
 annoying = tibble(
-  '1' = 1:10,
-  '2' = annoying[['1']] * 2 + rnorm(length('1'))
+  `1` = 1:10,
+  `2` = `1` * 2 + rnorm(length(`1`))
 )
-#OK the code wouldn't even work. The error message reads: "Error in "1" * 2 : non-numeric argument to binary operator". I think R did not get the '1' part... I don't know what to do. This is truly annoying. 
+annoying
+annoying[["1"]]
+ggplot(data = annoying) +
+  geom_point(mapping = aes(x = `1`, y = `2`))
+annoying = annoying %>%
+  mutate(`3` = `2`/`1`)
+colnames(annoying) = c("one","two","three")
+annoying
 ```
 
 5. What does tibble::enframe() do? When might you use it?   
