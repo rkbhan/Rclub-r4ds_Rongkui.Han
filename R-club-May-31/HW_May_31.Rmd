@@ -41,3 +41,105 @@ diamonds %>%
     geom_tile()
 ```
 
+###Chapter 10: Tibble  
+####10.2 Creating tibbles  
+```{r}
+as_tibble(iris)
+tibble(x = 1:5, y = 1, z = x^2 + y)
+tibble(':)' = "smile", ' ' = "space", '2000' = "number")
+tribble(~x, ~y, ~z, 
+        "a",2,3.6,
+        "b",1,8.5) #-_- this is kinda confusing. 
+```
+
+####10.3 Tibbles vs. data.frame  
+#####10.3.1 Printing 
+```{r}
+tibble(
+  a = lubridate::now() +runif(1e3) * 86400,
+  b = lubridate::today() + runif(1e3) * 30,
+  c = 1:1e3,
+  d = runif(1e3),
+  e = sample(letters, 1e3, replace = TRUE)
+)
+#somehow it didnt print.
+library(nycflights13)
+flights %>%
+  print(n = 10, width = Inf)
+#options(tibble.print_max = n, tibble.print_min = m) to change the difalut option of printing 
+#options(tibble.width = Inf) to always print all columns. 
+nycflights13::flights %>%
+  View()
+``` 
+
+##### 10.3.2 Subsetting   
+```{r}
+df = tibble(x = runif(5), y = runif(5))
+df$x
+df[["x"]] #never used this one before
+df[[1]]
+df %>% .$x #you can subset in a pipe
+df %>% .[["x"]]
+```
+
+####10.4 Interacting with older code
+```{r}
+tb = tibble(x = 1:5, y = c("a","b","c","d","e"))
+class(as.data.frame(tb))
+```
+
+####10.5 Exercises  
+1. How can you tell if an object is a tibble?  
+```{r}
+print(mtcars)
+print(diamonds)
+class(mtcars)
+class(diamonds)
+```
+
+I don't know I was supposed to be able to tell which one was a tibble just by printing them. But when I uwed the class() function it was pretty clear.   
+
+2. Compare and contrast the following operations on a data.frame and equivalent tibble. What is different? Why might the default data frame behavious cause you frustration?  
+```{r}
+df = data.frame(abc = 1, xyz = "a")
+df$x
+df[,"xyz"]
+df[,c("abc","xyz")]
+df$a
+```
+
+the df$x command gave me the same output as df[,"xyz"]. I guess the "x"" was good enough to evoke "xyz?"  
+
+3. If you have the name of a vairable stored in an object, e.g. var = "mpg", how can you extrat the reference variable from a tibble?
+```{r}
+diamonds %>%
+  select(cut)
+as.data.frame(diamonds)[,"cut"]
+```
+
+This is very interesting when looked at side-by-side. Subsetting the tibble "diamonds" with select() gave me the output nicely organized in a column, whereas the subsetting the data frame "diamonds" gave a mass of text (factors).  
+
+4. Practive referring to non-syntactic names in the following data frame by:    
+a. Extracting the variable called 1;  
+b. Plotting a scatterplot of 1 vs 2;  
+c. Creating a new column called 3 which is 2 divided by 1;  
+d. Renaming the columns to one, two and three.  
+```{r}
+#annoying = tibble(
+#  '1' = 1:10,
+#  '2' = '1' * 2 + rnorm(length('1'))
+#)
+#OK the code wouldn't even work. The error message reads: "Error in "1" * 2 : non-numeric argument to binary operator". I think R did not get the '1' part... I don't know what to do. This is truly annoying. 
+```
+
+5. What does tibble::enframe() do? When might you use it?   
+```{r}
+tibble::enframe(c(1:3))
+```
+
+I guess it makes a vector into dataframe? I could figure out how the name and value arguments work.  
+
+6. What option controls how many additional column names are printed at the footer of a tibble?  
+
+*I think you use the options() function? But I'm not sure what the question is asking for or how to do it =P. 
+
