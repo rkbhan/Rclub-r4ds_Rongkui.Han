@@ -91,9 +91,14 @@ class(as.data.frame(tb))
 ####10.5 Exercises  
 1. How can you tell if an object is a tibble?  
 ```{r}
-print(mtcars)
-print(diamonds)
+mtcars
+as.tibble(mtcars)
+diamonds
 class(mtcars)
+mtcars %>%
+  is_tibble() #this is kinda cool. 
+as.tibble(mtcars) %>%
+  is_tibble()
 class(diamonds)
 ```
 
@@ -101,11 +106,12 @@ I don't know I was supposed to be able to tell which one was a tibble just by pr
 
 2. Compare and contrast the following operations on a data.frame and equivalent tibble. What is different? Why might the default data frame behavious cause you frustration?  
 ```{r}
-df = data.frame(abc = 1, xyz = "a")
+df = data.frame(abc = 1, xyz = "a", xy = "b")
 df$x
+df$a
+#the $ command returns a column with just the first letter only when the first letter is unique to a column. 
 df[,"xyz"]
 df[,c("abc","xyz")]
-df$a
 ```
 
 the df$x command gave me the same output as df[,"xyz"]. I guess the "x"" was good enough to evoke "xyz?"  
@@ -125,10 +131,10 @@ b. Plotting a scatterplot of 1 vs 2;
 c. Creating a new column called 3 which is 2 divided by 1;  
 d. Renaming the columns to one, two and three.  
 ```{r}
-#annoying = tibble(
-#  '1' = 1:10,
-#  '2' = '1' * 2 + rnorm(length('1'))
-#)
+annoying = tibble(
+  '1' = 1:10,
+  '2' = annoying[['1']] * 2 + rnorm(length('1'))
+)
 #OK the code wouldn't even work. The error message reads: "Error in "1" * 2 : non-numeric argument to binary operator". I think R did not get the '1' part... I don't know what to do. This is truly annoying. 
 ```
 
