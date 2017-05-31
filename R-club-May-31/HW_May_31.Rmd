@@ -109,18 +109,22 @@ I don't know I was supposed to be able to tell which one was a tibble just by pr
 df = data.frame(abc = 1, xyz = "a", xy = "b")
 df$x
 df$a
-#the $ command returns a column with just the first letter only when the first letter is unique to a column. 
+#the $ command returns a column with just the first letter only when the first letter is unique to a column. Still this might be problematic. 
 df[,"xyz"]
-df[,c("abc","xyz")]
+df[,c("abc","xy")]
+df_tb = as.tibble(df)
+df_tb$a #short hand doesn't work for tibbles. 
+df_tb[,"xyz"] # your output is a tibble, not a vector. This is actually really good. 
 ```
 
 the df$x command gave me the same output as df[,"xyz"]. I guess the "x"" was good enough to evoke "xyz?"  
 
-3. If you have the name of a vairable stored in an object, e.g. var = "mpg", how can you extrat the reference variable from a tibble?
+3. If you have the name of a vairable stored in an object, e.g. var = "mpg", how can you extract the reference variable from a tibble?
 ```{r}
-diamonds %>%
-  select(cut)
-as.data.frame(diamonds)[,"cut"]
+tbcars = as.tibble(mtcars)
+var = "mpg"
+tbcars[[var]]
+as.data.frame(mtcars)[,var]
 ```
 
 This is very interesting when looked at side-by-side. Subsetting the tibble "diamonds" with select() gave me the output nicely organized in a column, whereas the subsetting the data frame "diamonds" gave a mass of text (factors).  
