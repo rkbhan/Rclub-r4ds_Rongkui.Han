@@ -12,4 +12,92 @@ output:
 library(tidyverse)
 ```
 
+###11.2 Getting started
+```{r}
+read_csv("a,b,c
+         1,2,3
+         4,5,6")
+```
+
+This is a rather interesting (not sure how useful) function. Notice that it is an "_" between "read" and "csv", not the usual ".". Use *enter* to denote change of row (like you would intuitively).   
+
+```{r}
+read_csv("The first line of metadata
+         The second line of metadata
+         x,y,z
+         1,2,3", skip = 2)
+read_csv("# the line I want to skip
+         x,y,z
+         1,2,3", comment= "#")
+```
+
+Magic!  
+
+The data don't necessarily have colume names. Or the colume names don't have to be specified in the parentheses.   
+```{r}
+read_csv("1,2,3\n4,5,6", col_names = FALSE)
+read_csv("1,2,3\n4,5,6", col_names = c("x","y","z"))
+```
+
+You can use *backslash n* in place of *enter*.  
+
+You can even create a table with na in it, using the "na =" option.   
+```{r}
+read_csv("a,b,c\n1,2,blahblah", na = "blahblah")
+```
+
+I am more ammused by "na = "blahblah"" than I am supposed to.   
+
+####11.2.1 Compared to base R  
+
++ read_csv() can be 10x faster than read.csv() *surprise!*  
++ They produce tibbles  
++ They are more reproducible. Base R functions inherit some behaviors from your operation system and environment variables, so importing codes that works on your computer might not work on someone else's.  
+
+This is actually a really convincing list of reasons.  
+
+####11.2.2 Exercises  
+1. Water function would you use to read a file where fields where separated with "|"? *(psv? -- nope)*  
+
+```{r}
+read_delim("1|2|3\n4|5|6", col_names = c("x","y","z"), delim = "|")
+```
+
+2. Apart from file, skip, and comment, what other arguments do read_csv() and read_tsv() have in common?  
+
+*Actually all of their options are the same.*  
+read_tsv(file, col_names = TRUE, col_types = NULL,  
+  locale = default_locale(), na = c("", "NA"), quoted_na = TRUE,  
+  quote = "\"", comment = "", trim_ws = TRUE, skip = 0, n_max = Inf,  
+  guess_max = min(1000, n_max), progress = show_progress())  
+  
+3. What are the most important arguments ro read_fwf()?  
+
+*I think the most important arguments are the ones that don't have decult values, like "file =" and "col_positions".   
+
+4. Sometimes strings in a CSV file contain commas. To prevent them from causing problems they need to be surrounded by a quoting character, like " or '. By convention, read_csv() assumes that the quoting character will be ", and if you want to change it you’ll need to use read_delim() instead. What arguments do you need to specify to read the following text into a data frame?   
+
+*You will need a "quote =" argument.*   
+```{r}
+read_delim("x,y\n1,'a,b'", delim = ",", quote = "''" )
+
+```
+
+5. Identify what is wrong with each of the following inline CSV files. What happens when you run the code?  
+
+```{r}
+read_csv("a,b\n1,2,3\n4,5,6") 
+#the third column gets dropped because the first row has only two items.
+read_csv("a,b,c\n1,2\n1,2,3,4") 
+#The first row has an NA and the fourth item on the second row gets dropped. The problem is that the rows are not of the same length.  
+read_csv("a,b\n\"1")
+#second item (column b) missing (NA) in the fist row.  
+read_csv("a,b\n1,2\na,b")
+#idk... second row has the same content at the column names?
+read_csv("a;b\n1;3")
+#I think this code is trying the use ";" as a delimiter. The correct code for taht purpose would be:
+read_delim("a;b\n1;3", delim = ";")
+```
+
+
 
