@@ -99,5 +99,16 @@ read_csv("a;b\n1;3")
 read_delim("a;b\n1;3", delim = ";")
 ```
 
+###11.3 Parsing a vector  
+```{r}
+str(parse_logical(c("TRUE","FALSE","NA")))
+str(parse_integer(c("1","2","3")))
+str(parse_date(c("2010-01-01","1979-10-14")))
+parse_integer(c("1","231",".","456"), na = ".")
+#a parsing failure example:
+x = parse_integer(c("1","231",".","abc","123.45"), na = ".")
+x
+problems(x) #returns a tibble
+```
 
 
