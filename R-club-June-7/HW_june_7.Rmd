@@ -1,0 +1,15 @@
+---
+title: "HW_June_7"
+author: "Rongkui Han"
+date: "June 7, 2017"
+output: 
+  html_document: 
+    keep_md: yes
+---
+##11 Data Import
+####11.1.1 Prerequisites
+```{r}
+library(tidyverse)
+```
+
+
