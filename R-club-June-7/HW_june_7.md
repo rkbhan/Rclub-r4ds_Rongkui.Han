@@ -296,7 +296,7 @@ parse_integer(c("1","231",".","456"), na = ".")
 
 ```r
 #a parsing failure example:
-parse_integer(c("1","231",".","abc","123.45"), na = ".")
+x = parse_integer(c("1","231",".","abc","123.45"), na = ".")
 ```
 
 ```
@@ -309,6 +309,10 @@ parse_integer(c("1","231",".","abc","123.45"), na = ".")
 ## row # A tibble: 2 x 4 col     row   col               expected actual expected   <int> <int>                  <chr>  <chr> actual 1     4    NA             an integer    abc row 2     5    NA no trailing characters    .45
 ```
 
+```r
+x
+```
+
 ```
 ## [1]   1 231  NA  NA  NA
 ## attr(,"problems")
@@ -317,6 +321,682 @@ parse_integer(c("1","231",".","abc","123.45"), na = ".")
 ##   <int> <int>                  <chr>  <chr>
 ## 1     4    NA             an integer    abc
 ## 2     5    NA no trailing characters    .45
+```
+
+```r
+problems(x) #returns a tibble
+```
+
+```
+## # A tibble: 2 x 4
+##     row   col               expected actual
+##   <int> <int>                  <chr>  <chr>
+## 1     4    NA             an integer    abc
+## 2     5    NA no trailing characters    .45
+```
+
+####11.3.1 Numbers  
+
+```r
+#you can specify decimal marks via parse_double() 
+parse_double("1.23")
+```
+
+```
+## [1] 1.23
+```
+
+```r
+parse_double("1,23", locale = locale(decimal_mark = ","))
+```
+
+```
+## [1] 1.23
+```
+
+```r
+#parse_number() ignores all non-numeric symbols.
+parse_number("$100")
+```
+
+```
+## [1] 100
+```
+
+```r
+parse_number("20%")
+```
+
+```
+## [1] 20
+```
+
+```r
+#the combination of parse_number() and parse_double deals with grouping mark.
+parse_number("$123,456,789")
+```
+
+```
+## [1] 123456789
+```
+
+```r
+parse_number("123.456.789", locale = locale(grouping_mark = "."))
+```
+
+```
+## [1] 123456789
+```
+
+```r
+parse_number("123'456'789", locale = locale(grouping_mark = "'"))
+```
+
+```
+## [1] 123456789
+```
+
+####11.3.2 Strings  
+
+```r
+charToRaw("Hadley")
+```
+
+```
+## [1] 48 61 64 6c 65 79
+```
+
+```r
+x1 <- "El Ni\xf1o was particularly bad this year"
+x2 <- "\x82\xb1\x82\xf1\x82\xc9\x82\xbf\x82\xcd"
+parse_character(x1, locale = locale(encoding = "Latin1"))
+```
+
+```
+## [1] "El Niño was particularly bad this year"
+```
+
+```r
+parse_character(x2, locale = locale(encoding = "Shift-JIS"))
+```
+
+```
+## [1] "こんにちは"
+```
+
+```r
+guess_encoding(charToRaw(x1))
+```
+
+```
+## # A tibble: 2 x 2
+##     encoding confidence
+##        <chr>      <dbl>
+## 1 ISO-8859-1       0.46
+## 2 ISO-8859-9       0.23
+```
+
+```r
+guess_encoding(charToRaw(x2))
+```
+
+```
+## # A tibble: 1 x 2
+##   encoding confidence
+##      <chr>      <dbl>
+## 1   KOI8-R       0.42
+```
+
+####11.3.3 Factors  
+
+```r
+fruit = c("apple","banana")
+parse_factor(c("apple","banana","bananana"), levels = fruit)
+```
+
+```
+## Warning: 1 parsing failure.
+## row # A tibble: 1 x 4 col     row   col           expected   actual expected   <int> <int>              <chr>    <chr> actual 1     3    NA value in level set bananana
+```
+
+```
+## [1] apple  banana <NA>  
+## attr(,"problems")
+## # A tibble: 1 x 4
+##     row   col           expected   actual
+##   <int> <int>              <chr>    <chr>
+## 1     3    NA value in level set bananana
+## Levels: apple banana
+```
+
+####11.3.4 Dates, date-times, and times  
+
+```r
+parse_datetime("2010-10-01T2010")
+```
+
+```
+## [1] "2010-10-01 20:10:00 UTC"
+```
+
+```r
+parse_datetime("20101010")
+```
+
+```
+## [1] "2010-10-10 UTC"
+```
+
+```r
+parse_date("2010-10-01")
+```
+
+```
+## [1] "2010-10-01"
+```
+
+```r
+parse_time("01:10 am")
+```
+
+```
+## 01:10:00
+```
+
+```r
+parse_time("20:10:01")
+```
+
+```
+## 20:10:01
+```
+
+```r
+parse_date("01/02/15","%m/%d/%y")
+```
+
+```
+## [1] "2015-01-02"
+```
+
+```r
+parse_date("01/02/15","%d/%m/%y")
+```
+
+```
+## [1] "2015-02-01"
+```
+
+```r
+parse_date("01/02/15","%y/%m/%d")
+```
+
+```
+## [1] "2001-02-15"
+```
+
+```r
+parse_date("1 janvier 2015", "%d %B %Y", locale = locale("fr"))
+```
+
+```
+## [1] "2015-01-01"
+```
+
+####11.3.5 Exercises
+1. What are the most important arguments to locale()?  
+
+```r
+locale(date_names = "en", date_format = "%AD", time_format = "%AT",
+  decimal_mark = ".", grouping_mark = ",", tz = "UTC",
+  encoding = "UTF-8", asciify = FALSE)
+```
+
+All of them look pretty important... it's hard for me to decide which ones are the most important...   
+
+2.What happens if you try and set decimal_mark and grouping_mark to the same character? What happens to the default value of grouping_mark when you set decimal_mark to “,”? What happens to the default value of decimal_mark when you set the grouping_mark to “.”?   
+
+```r
+parse_double("123,456,789", locale = locale(decimal_mark = ",", grouping_mark = ","))
+```
+
+There was an error message telling me that decimal_mark and grouping_mark must be different.   
+
+```r
+parse_double("123456,789", locale = locale(decimal_mark = ","))
+```
+
+```
+## [1] 123456.8
+```
+
+I guess the default changes?  
+
+
+```r
+parse_double("123.456.789", locale = locale(grouping_mark = "."))
+```
+
+```
+## Warning: 1 parsing failure.
+## row # A tibble: 1 x 4 col     row   col               expected   actual expected   <int> <int>                  <chr>    <chr> actual 1     1    NA no trailing characters .456.789
+```
+
+```
+## [1] NA
+## attr(,"problems")
+## # A tibble: 1 x 4
+##     row   col               expected   actual
+##   <int> <int>                  <chr>    <chr>
+## 1     1    NA no trailing characters .456.789
+```
+
+Changing grouping_mark to "."" did not work for me.   
+
+3. What do date_format and time_formate options to locale do?  
+ *I couldn't figure this out.*  
+ 
+ 4. If you live outside the US, create a new locale object tjat encapsulates the settings for te types of file you read most commonly. 
+ 
+ *Couldn't figure out how to do this either = =*  
+ 
+ 5. What's the difference between read_csv() and read_csv2()?
+ *read_csv2() uses ";" instead of comma to delimit.*  
+ 
+ 6. What are the most common encodings used in Europe? What are teh most common encodings used in Asia? Do some googling to find out.  
+ *IEC 8859 is used for most European languages, and GB 18030 is used in China. EUC is used in Japan.*  
+ 
+7. Generate the correct formate strong to parse peach of the following dates and times:  
+
+```r
+d1 <- "January 1, 2010"
+parse_date(d1, "%B %d, %Y")
+```
+
+```
+## [1] "2010-01-01"
+```
+
+```r
+d2 <- "2015-Mar-07"
+parse_date(d2, "%Y-%b-%d")
+```
+
+```
+## [1] "2015-03-07"
+```
+
+```r
+d3 <- "06-Jun-2017"
+parse_date(d3, "%d-%b-%Y")
+```
+
+```
+## [1] "2017-06-06"
+```
+
+```r
+d4 <- c("August 19 (2015)", "July 1 (2015)")
+parse_date(d4, "%B %d (%Y)")
+```
+
+```
+## [1] "2015-08-19" "2015-07-01"
+```
+
+```r
+d5 <- "12/30/14" # Dec 30, 2014
+parse_date(d5, "%m/%d/%y")
+```
+
+```
+## [1] "2014-12-30"
+```
+
+```r
+t1 <- "1705"
+parse_time(t1, "%H%M")
+```
+
+```
+## 17:05:00
+```
+
+```r
+t2 <- "11:15:10.12 PM"
+parse_time(t2, "%I:%M:%OS %p")
+```
+
+```
+## 23:15:10.12
+```
+
+###Parsing a file  
+####11.4.1 Strategy  
+
+```r
+guess_parser("2010-10-01")
+```
+
+```
+## [1] "date"
+```
+
+```r
+guess_parser("15:01")
+```
+
+```
+## [1] "time"
+```
+
+```r
+guess_parser(c("TRUE","FALSE"))
+```
+
+```
+## [1] "logical"
+```
+
+```r
+guess_parser(c("1","5","9"))
+```
+
+```
+## [1] "integer"
+```
+
+```r
+guess_parser(c("12","352","561"))
+```
+
+```
+## [1] "integer"
+```
+
+```r
+str(guess_parser ("2010-10-10"))
+```
+
+```
+##  chr "date"
+```
+
+####11.4.2 Problems  
+
+```r
+challenge = read_csv(readr_example("challenge.csv"))
+```
+
+```
+## Parsed with column specification:
+## cols(
+##   x = col_integer(),
+##   y = col_character()
+## )
+```
+
+```
+## Warning in rbind(names(probs), probs_f): number of columns of result is not
+## a multiple of vector length (arg 1)
+```
+
+```
+## Warning: 1000 parsing failures.
+## row # A tibble: 5 x 5 col     row   col               expected             actual expected   <int> <chr>                  <chr>              <chr> actual 1  1001     x no trailing characters .23837975086644292 file 2  1002     x no trailing characters .41167997173033655 row 3  1003     x no trailing characters  .7460716762579978 col 4  1004     x no trailing characters   .723450553836301 expected 5  1005     x no trailing characters   .614524137461558 actual # ... with 1 more variables: file <chr>
+## ... ................. ... ....................................................... ........ ....................................................... ...... ....................................................... .... ....................................................... ... ....................................................... ... ....................................................... ........ ....................................................... ...... .......................................
+## See problems(...) for more details.
+```
+
+```r
+problems(challenge)
+```
+
+```
+## # A tibble: 1,000 x 5
+##      row   col               expected             actual
+##    <int> <chr>                  <chr>              <chr>
+##  1  1001     x no trailing characters .23837975086644292
+##  2  1002     x no trailing characters .41167997173033655
+##  3  1003     x no trailing characters  .7460716762579978
+##  4  1004     x no trailing characters   .723450553836301
+##  5  1005     x no trailing characters   .614524137461558
+##  6  1006     x no trailing characters   .473980569280684
+##  7  1007     x no trailing characters  .5784610391128808
+##  8  1008     x no trailing characters  .2415937229525298
+##  9  1009     x no trailing characters .11437866208143532
+## 10  1010     x no trailing characters  .2983446326106787
+## # ... with 990 more rows, and 1 more variables: file <chr>
+```
+
+```r
+challenge <- read_csv(
+  readr_example("challenge.csv"), 
+  col_types = cols(
+    x = col_integer(),
+    y = col_character()
+  )
+)
+```
+
+```
+## Warning in rbind(names(probs), probs_f): number of columns of result is not a multiple of vector length (arg 1)
+
+## Warning in rbind(names(probs), probs_f): 1000 parsing failures.
+## row # A tibble: 5 x 5 col     row   col               expected             actual expected   <int> <chr>                  <chr>              <chr> actual 1  1001     x no trailing characters .23837975086644292 file 2  1002     x no trailing characters .41167997173033655 row 3  1003     x no trailing characters  .7460716762579978 col 4  1004     x no trailing characters   .723450553836301 expected 5  1005     x no trailing characters   .614524137461558 actual # ... with 1 more variables: file <chr>
+## ... ................. ... ....................................................... ........ ....................................................... ...... ....................................................... .... ....................................................... ... ....................................................... ... ....................................................... ........ ....................................................... ...... .......................................
+## See problems(...) for more details.
+```
+
+```r
+challenge <- read_csv(
+  readr_example("challenge.csv"), 
+  col_types = cols(
+    x = col_double(),
+    y = col_character()
+  )
+)
+tail(challenge)
+```
+
+```
+## # A tibble: 6 x 2
+##           x          y
+##       <dbl>      <chr>
+## 1 0.8052743 2019-11-21
+## 2 0.1635163 2018-03-29
+## 3 0.4719390 2014-08-04
+## 4 0.7183186 2015-08-16
+## 5 0.2698786 2020-02-04
+## 6 0.6082372 2019-01-06
+```
+
+```r
+challenge <- read_csv(
+  readr_example("challenge.csv"), 
+  col_types = cols(
+    x = col_double(),
+    y = col_date()
+  )
+)
+tail(challenge)
+```
+
+```
+## # A tibble: 6 x 2
+##           x          y
+##       <dbl>     <date>
+## 1 0.8052743 2019-11-21
+## 2 0.1635163 2018-03-29
+## 3 0.4719390 2014-08-04
+## 4 0.7183186 2015-08-16
+## 5 0.2698786 2020-02-04
+## 6 0.6082372 2019-01-06
+```
+
+####11.4.3 Other strategies  
+
+```r
+challenge2 = read_csv(readr_example("challenge.csv"), guess_max = 1001)
+```
+
+```
+## Parsed with column specification:
+## cols(
+##   x = col_double(),
+##   y = col_date(format = "")
+## )
+```
+
+```r
+challenge2
+```
+
+```
+## # A tibble: 2,000 x 2
+##        x      y
+##    <dbl> <date>
+##  1   404     NA
+##  2  4172     NA
+##  3  3004     NA
+##  4   787     NA
+##  5    37     NA
+##  6  2332     NA
+##  7  2489     NA
+##  8  1449     NA
+##  9  3665     NA
+## 10  3863     NA
+## # ... with 1,990 more rows
+```
+
+```r
+challenge2 <- read_csv(readr_example("challenge.csv"), 
+  col_types = cols(.default = col_character())
+)
+df <- tribble(
+  ~x,  ~y,
+  "1", "1.21",
+  "2", "2.32",
+  "3", "4.56"
+)
+df
+```
+
+```
+## # A tibble: 3 x 2
+##       x     y
+##   <chr> <chr>
+## 1     1  1.21
+## 2     2  2.32
+## 3     3  4.56
+```
+
+```r
+type_convert(df)
+```
+
+```
+## Parsed with column specification:
+## cols(
+##   x = col_integer(),
+##   y = col_double()
+## )
+```
+
+```
+## # A tibble: 3 x 2
+##       x     y
+##   <int> <dbl>
+## 1     1  1.21
+## 2     2  2.32
+## 3     3  4.56
+```
+
+###11.5 Writing to a file  
+
+```r
+write_csv(challenge, "challenge.csv")
+challenge
+```
+
+```
+## # A tibble: 2,000 x 2
+##        x      y
+##    <dbl> <date>
+##  1   404     NA
+##  2  4172     NA
+##  3  3004     NA
+##  4   787     NA
+##  5    37     NA
+##  6  2332     NA
+##  7  2489     NA
+##  8  1449     NA
+##  9  3665     NA
+## 10  3863     NA
+## # ... with 1,990 more rows
+```
+
+```r
+read_csv("challenge.csv")
+```
+
+```
+## Parsed with column specification:
+## cols(
+##   x = col_integer(),
+##   y = col_character()
+## )
+```
+
+```
+## Warning in rbind(names(probs), probs_f): number of columns of result is not
+## a multiple of vector length (arg 1)
+```
+
+```
+## Warning: 1000 parsing failures.
+## row # A tibble: 5 x 5 col     row   col               expected             actual            file expected   <int> <chr>                  <chr>              <chr>           <chr> actual 1  1001     x no trailing characters .23837975086644292 'challenge.csv' file 2  1002     x no trailing characters .41167997173033655 'challenge.csv' row 3  1003     x no trailing characters  .7460716762579978 'challenge.csv' col 4  1004     x no trailing characters   .723450553836301 'challenge.csv' expected 5  1005     x no trailing characters   .614524137461558 'challenge.csv'
+## ... ................. ... ....................................................................... ........ ....................................................................... ...... ....................................................................... .... ....................................................................... ... ....................................................................... ... ....................................................................... ........ .......................................................................
+## See problems(...) for more details.
+```
+
+```
+## # A tibble: 2,000 x 2
+##        x     y
+##    <int> <chr>
+##  1   404  <NA>
+##  2  4172  <NA>
+##  3  3004  <NA>
+##  4   787  <NA>
+##  5    37  <NA>
+##  6  2332  <NA>
+##  7  2489  <NA>
+##  8  1449  <NA>
+##  9  3665  <NA>
+## 10  3863  <NA>
+## # ... with 1,990 more rows
+```
+
+```r
+write_rds(challenge, "challenge.rds")
+read_rds("challenge.rds")
+```
+
+```
+## # A tibble: 2,000 x 2
+##        x      y
+##    <dbl> <date>
+##  1   404     NA
+##  2  4172     NA
+##  3  3004     NA
+##  4   787     NA
+##  5    37     NA
+##  6  2332     NA
+##  7  2489     NA
+##  8  1449     NA
+##  9  3665     NA
+## 10  3863     NA
+## # ... with 1,990 more rows
 ```
 
 

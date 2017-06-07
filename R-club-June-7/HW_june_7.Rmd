@@ -111,4 +111,174 @@ x
 problems(x) #returns a tibble
 ```
 
+####11.3.1 Numbers  
+```{r}
+#you can specify decimal marks via parse_double() 
+parse_double("1.23")
+parse_double("1,23", locale = locale(decimal_mark = ","))
+#parse_number() ignores all non-numeric symbols.
+parse_number("$100")
+parse_number("20%")
+#the combination of parse_number() and parse_double deals with grouping mark.
+parse_number("$123,456,789")
+parse_number("123.456.789", locale = locale(grouping_mark = "."))
+parse_number("123'456'789", locale = locale(grouping_mark = "'"))
+```
+
+####11.3.2 Strings  
+```{r}
+charToRaw("Hadley")
+x1 <- "El Ni\xf1o was particularly bad this year"
+x2 <- "\x82\xb1\x82\xf1\x82\xc9\x82\xbf\x82\xcd"
+parse_character(x1, locale = locale(encoding = "Latin1"))
+parse_character(x2, locale = locale(encoding = "Shift-JIS"))
+guess_encoding(charToRaw(x1))
+guess_encoding(charToRaw(x2))
+```
+
+####11.3.3 Factors  
+```{r}
+fruit = c("apple","banana")
+parse_factor(c("apple","banana","bananana"), levels = fruit)
+```
+
+####11.3.4 Dates, date-times, and times  
+```{r}
+parse_datetime("2010-10-01T2010")
+parse_datetime("20101010")
+parse_date("2010-10-01")
+parse_time("01:10 am")
+parse_time("20:10:01")
+parse_date("01/02/15","%m/%d/%y")
+parse_date("01/02/15","%d/%m/%y")
+parse_date("01/02/15","%y/%m/%d")
+parse_date("1 janvier 2015", "%d %B %Y", locale = locale("fr"))
+```
+
+####11.3.5 Exercises
+1. What are the most important arguments to locale()?  
+```{r, eval = FALSE}
+locale(date_names = "en", date_format = "%AD", time_format = "%AT",
+  decimal_mark = ".", grouping_mark = ",", tz = "UTC",
+  encoding = "UTF-8", asciify = FALSE)
+```
+
+All of them look pretty important... it's hard for me to decide which ones are the most important...   
+
+2.What happens if you try and set decimal_mark and grouping_mark to the same character? What happens to the default value of grouping_mark when you set decimal_mark to “,”? What happens to the default value of decimal_mark when you set the grouping_mark to “.”?   
+```{r, eval = FALSE}
+parse_double("123,456,789", locale = locale(decimal_mark = ",", grouping_mark = ","))
+```
+
+There was an error message telling me that decimal_mark and grouping_mark must be different.   
+```{r}
+parse_double("123456,789", locale = locale(decimal_mark = ","))
+```
+
+I guess the default changes?  
+
+```{r}
+parse_double("123.456.789", locale = locale(grouping_mark = "."))
+```
+
+Changing grouping_mark to "."" did not work for me.   
+
+3. What do date_format and time_formate options to locale do?  
+ *I couldn't figure this out.*  
+ 
+ 4. If you live outside the US, create a new locale object tjat encapsulates the settings for te types of file you read most commonly. 
+ 
+ *Couldn't figure out how to do this either = =*  
+ 
+ 5. What's the difference between read_csv() and read_csv2()?
+ *read_csv2() uses ";" instead of comma to delimit.*  
+ 
+ 6. What are the most common encodings used in Europe? What are teh most common encodings used in Asia? Do some googling to find out.  
+ *IEC 8859 is used for most European languages, and GB 18030 is used in China. EUC is used in Japan.*  
+ 
+7. Generate the correct formate strong to parse peach of the following dates and times:  
+```{r}
+d1 <- "January 1, 2010"
+parse_date(d1, "%B %d, %Y")
+d2 <- "2015-Mar-07"
+parse_date(d2, "%Y-%b-%d")
+d3 <- "06-Jun-2017"
+parse_date(d3, "%d-%b-%Y")
+d4 <- c("August 19 (2015)", "July 1 (2015)")
+parse_date(d4, "%B %d (%Y)")
+d5 <- "12/30/14" # Dec 30, 2014
+parse_date(d5, "%m/%d/%y")
+t1 <- "1705"
+parse_time(t1, "%H%M")
+t2 <- "11:15:10.12 PM"
+parse_time(t2, "%I:%M:%OS %p")
+```
+
+###Parsing a file  
+####11.4.1 Strategy  
+```{r}
+guess_parser("2010-10-01")
+guess_parser("15:01")
+guess_parser(c("TRUE","FALSE"))
+guess_parser(c("1","5","9"))
+guess_parser(c("12","352","561"))
+str(guess_parser ("2010-10-10"))
+
+```
+
+####11.4.2 Problems  
+```{r}
+challenge = read_csv(readr_example("challenge.csv"))
+problems(challenge)
+challenge <- read_csv(
+  readr_example("challenge.csv"), 
+  col_types = cols(
+    x = col_integer(),
+    y = col_character()
+  )
+)
+challenge <- read_csv(
+  readr_example("challenge.csv"), 
+  col_types = cols(
+    x = col_double(),
+    y = col_character()
+  )
+)
+tail(challenge)
+challenge <- read_csv(
+  readr_example("challenge.csv"), 
+  col_types = cols(
+    x = col_double(),
+    y = col_date()
+  )
+)
+tail(challenge)
+```
+
+####11.4.3 Other strategies  
+```{r}
+challenge2 = read_csv(readr_example("challenge.csv"), guess_max = 1001)
+challenge2
+challenge2 <- read_csv(readr_example("challenge.csv"), 
+  col_types = cols(.default = col_character())
+)
+df <- tribble(
+  ~x,  ~y,
+  "1", "1.21",
+  "2", "2.32",
+  "3", "4.56"
+)
+df
+type_convert(df)
+```
+
+###11.5 Writing to a file  
+```{r}
+write_csv(challenge, "challenge.csv")
+challenge
+read_csv("challenge.csv")
+write_rds(challenge, "challenge.rds")
+read_rds("challenge.rds")
+```
+
 
