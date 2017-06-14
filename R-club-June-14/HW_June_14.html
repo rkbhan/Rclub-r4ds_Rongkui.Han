@@ -366,6 +366,192 @@ stocks</code></pre>
 <pre class="r"><code>table4a %&gt;% 
   gather(1999, 2000, key = &quot;year&quot;, value = &quot;cases&quot;)</code></pre>
 <p>1999 and 2000 need to be <code>1999</code> and <code>2000</code></p>
+<ol start="3" style="list-style-type: decimal">
+<li>Why does spreading this tibble fail? How could you add a new column to fix it?<br />
+<em>I think it might be because there are two Phillip Woods + age combos with different age values. I can fix it by adding a column the differ in value for the duplicated entries.</em></li>
+</ol>
+<pre class="r"><code>people &lt;- tribble(
+  ~name,             ~key,    ~value,
+  #-----------------|--------|------
+  &quot;Phillip Woods&quot;,   &quot;age&quot;,       45,
+  &quot;Phillip Woods&quot;,   &quot;height&quot;,   186,
+  &quot;Phillip Woods&quot;,   &quot;age&quot;,       50,
+  &quot;Jessica Cordero&quot;, &quot;age&quot;,       37,
+  &quot;Jessica Cordero&quot;, &quot;height&quot;,   156
+)
+people %&gt;%
+  mutate(thing = c(1,1,2,1,1)) %&gt;%
+  spread(key = key, value = value)</code></pre>
+<pre><code>## # A tibble: 3 x 4
+##              name thing   age height
+## *           &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;
+## 1 Jessica Cordero     1    37    156
+## 2   Phillip Woods     1    45    186
+## 3   Phillip Woods     2    50     NA</code></pre>
+<ol start="4" style="list-style-type: decimal">
+<li>Tidy the simple tibble below. Do you need to spread or gather it? Whhat are teh variables?</li>
+</ol>
+<pre class="r"><code>preg &lt;- tribble(
+  ~pregnant, ~male, ~female,
+  &quot;yes&quot;,     NA,    10,
+  &quot;no&quot;,      20,    12
+)
+preg %&gt;%
+  gather(male, female, key = &quot;gender&quot;, value = &quot;count&quot;)</code></pre>
+<pre><code>## # A tibble: 4 x 3
+##   pregnant gender count
+##      &lt;chr&gt;  &lt;chr&gt; &lt;dbl&gt;
+## 1      yes   male    NA
+## 2       no   male    20
+## 3      yes female    10
+## 4       no female    12</code></pre>
+<p>I gathered it but i’m not sure if that’s all I can do.</p>
+</div>
+</div>
+<div id="separating-and-uniting" class="section level3">
+<h3>12.4 Separating and uniting</h3>
+<div id="separate" class="section level4">
+<h4>12.4.1 Separate</h4>
+<pre class="r"><code>table3 = tibble(&quot;country&quot; = c(&quot;Afghanistan&quot;, &quot;Afghanistan&quot;,&quot;Brazil&quot;,&quot;Brazil&quot;,&quot;China&quot;,&quot;China&quot;), &quot;year&quot; = c(1999,2000,1999,2000,1999,2000), &quot;rate&quot; = c(&quot;745/19987371&quot;,&quot;2666/20595360&quot; , &quot;37737/172006362&quot;, &quot;80488/174504898&quot;, &quot;212258/1272915272&quot;, &quot;213766/1280428583&quot;))
+table3 %&gt;%
+  separate(rate, into = c(&quot;cases&quot;,&quot;population&quot;))</code></pre>
+<pre><code>## # A tibble: 6 x 4
+##       country  year  cases population
+## *       &lt;chr&gt; &lt;dbl&gt;  &lt;chr&gt;      &lt;chr&gt;
+## 1 Afghanistan  1999    745   19987371
+## 2 Afghanistan  2000   2666   20595360
+## 3      Brazil  1999  37737  172006362
+## 4      Brazil  2000  80488  174504898
+## 5       China  1999 212258 1272915272
+## 6       China  2000 213766 1280428583</code></pre>
+<pre class="r"><code>table3 %&gt;%
+  separate(rate, into = c(&quot;cases&quot;,&quot;population&quot;), sep = &quot;/&quot;)</code></pre>
+<pre><code>## # A tibble: 6 x 4
+##       country  year  cases population
+## *       &lt;chr&gt; &lt;dbl&gt;  &lt;chr&gt;      &lt;chr&gt;
+## 1 Afghanistan  1999    745   19987371
+## 2 Afghanistan  2000   2666   20595360
+## 3      Brazil  1999  37737  172006362
+## 4      Brazil  2000  80488  174504898
+## 5       China  1999 212258 1272915272
+## 6       China  2000 213766 1280428583</code></pre>
+<pre class="r"><code>table3 %&gt;%
+  separate(rate, into = c(&quot;cases&quot;,&quot;population&quot;), convert = TRUE)</code></pre>
+<pre><code>## # A tibble: 6 x 4
+##       country  year  cases population
+## *       &lt;chr&gt; &lt;dbl&gt;  &lt;int&gt;      &lt;int&gt;
+## 1 Afghanistan  1999    745   19987371
+## 2 Afghanistan  2000   2666   20595360
+## 3      Brazil  1999  37737  172006362
+## 4      Brazil  2000  80488  174504898
+## 5       China  1999 212258 1272915272
+## 6       China  2000 213766 1280428583</code></pre>
+<pre class="r"><code>table5 = table3 %&gt;%
+  separate(year, into = c(&quot;century&quot;,&quot;year&quot;), sep = 2)</code></pre>
+</div>
+<div id="unite" class="section level4">
+<h4>12.4.2 Unite</h4>
+<pre class="r"><code>table5 %&gt;%
+  unite(new, century, year, sep = &quot;&quot;)</code></pre>
+<pre><code>## # A tibble: 6 x 3
+##       country   new              rate
+## *       &lt;chr&gt; &lt;chr&gt;             &lt;chr&gt;
+## 1 Afghanistan  1999      745/19987371
+## 2 Afghanistan  2000     2666/20595360
+## 3      Brazil  1999   37737/172006362
+## 4      Brazil  2000   80488/174504898
+## 5       China  1999 212258/1272915272
+## 6       China  2000 213766/1280428583</code></pre>
+</div>
+<div id="exercises-2" class="section level4">
+<h4>12.4.3Exercises</h4>
+<ol style="list-style-type: decimal">
+<li>What do the <code>extra</code> and <code>fill</code> arguments do in <code>separate()</code>? Experiment with the various options for the following two toy datasets.</li>
+</ol>
+<pre class="r"><code>?separate()
+tibble(x = c(&quot;a,b,c&quot;, &quot;d,e,f,g&quot;, &quot;h,i,j&quot;)) %&gt;% 
+  separate(x, c(&quot;one&quot;, &quot;two&quot;, &quot;three&quot;))</code></pre>
+<pre><code>## Warning: Too many values at 1 locations: 2</code></pre>
+<pre><code>## # A tibble: 3 x 3
+##     one   two three
+## * &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;
+## 1     a     b     c
+## 2     d     e     f
+## 3     h     i     j</code></pre>
+<pre class="r"><code>tibble(x = c(&quot;a,b,c&quot;, &quot;d,e,f,g&quot;, &quot;h,i,j&quot;)) %&gt;% 
+  separate(x, c(&quot;one&quot;, &quot;two&quot;, &quot;three&quot;), extra = &quot;drop&quot;)</code></pre>
+<pre><code>## # A tibble: 3 x 3
+##     one   two three
+## * &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;
+## 1     a     b     c
+## 2     d     e     f
+## 3     h     i     j</code></pre>
+<pre class="r"><code>tibble(x = c(&quot;a,b,c&quot;, &quot;d,e,f,g&quot;, &quot;h,i,j&quot;)) %&gt;% 
+  separate(x, c(&quot;one&quot;, &quot;two&quot;, &quot;three&quot;), extra = &quot;merge&quot;)</code></pre>
+<pre><code>## # A tibble: 3 x 3
+##     one   two three
+## * &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;
+## 1     a     b     c
+## 2     d     e   f,g
+## 3     h     i     j</code></pre>
+<pre class="r"><code>tibble(x = c(&quot;a,b,c&quot;, &quot;d,e&quot;, &quot;f,g,i&quot;)) %&gt;% 
+  separate(x, c(&quot;one&quot;, &quot;two&quot;, &quot;three&quot;))</code></pre>
+<pre><code>## Warning: Too few values at 1 locations: 2</code></pre>
+<pre><code>## # A tibble: 3 x 3
+##     one   two three
+## * &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;
+## 1     a     b     c
+## 2     d     e  &lt;NA&gt;
+## 3     f     g     i</code></pre>
+<pre class="r"><code>tibble(x = c(&quot;a,b,c&quot;, &quot;d,e&quot;, &quot;f,g,i&quot;)) %&gt;% 
+  separate(x, c(&quot;one&quot;, &quot;two&quot;, &quot;three&quot;), fill = &quot;left&quot;)</code></pre>
+<pre><code>## # A tibble: 3 x 3
+##     one   two three
+## * &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;
+## 1     a     b     c
+## 2  &lt;NA&gt;     d     e
+## 3     f     g     i</code></pre>
+<pre class="r"><code>tibble(x = c(&quot;a,b,c&quot;, &quot;d,e&quot;, &quot;f,g,i&quot;)) %&gt;% 
+  separate(x, c(&quot;one&quot;, &quot;two&quot;, &quot;three&quot;), fill = &quot;right&quot;)</code></pre>
+<pre><code>## # A tibble: 3 x 3
+##     one   two three
+## * &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;
+## 1     a     b     c
+## 2     d     e  &lt;NA&gt;
+## 3     f     g     i</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>Both <code>unite()</code> and <code>separate()</code> have a <code>remove</code> argument. What does it do? Why would you set it to <code>FALSE</code>?</li>
+</ol>
+<pre class="r"><code>tibble(x = c(&quot;a,b,c&quot;, &quot;d,e&quot;, &quot;f,g,i&quot;)) %&gt;% 
+  separate(x, c(&quot;one&quot;, &quot;two&quot;, &quot;three&quot;), fill = &quot;right&quot;, remove = FALSE)</code></pre>
+<pre><code>## # A tibble: 3 x 4
+##       x   one   two three
+## * &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;
+## 1 a,b,c     a     b     c
+## 2   d,e     d     e  &lt;NA&gt;
+## 3 f,g,i     f     g     i</code></pre>
+<p>It removes the new table from the original table. If you set it to FALSE you will get a table that is a combination of the original and the transformed table.</p>
+<ol start="3" style="list-style-type: decimal">
+<li>Compare and contrast <code>separate()</code> and <code>extract()</code>. Why are there three variations of separation (by position, by separator and with groups), but only one unite?</li>
+</ol>
+<pre class="r"><code>?extract()</code></pre>
+<pre><code>## Help on topic 'extract' was found in the following packages:
+## 
+##   Package               Library
+##   tidyr                 /Library/Frameworks/R.framework/Versions/3.3/Resources/library
+##   magrittr              /Library/Frameworks/R.framework/Versions/3.3/Resources/library
+## 
+## 
+## Using the first match ...</code></pre>
+<pre class="r"><code>tibble(x = c(&quot;a,b,c&quot;, &quot;d,e,f&quot;, &quot;g,h,i&quot;)) %&gt;% 
+  extract(x, &quot;A&quot;)</code></pre>
+<pre><code>## # A tibble: 3 x 1
+##       A
+## * &lt;chr&gt;
+## 1     a
+## 2     d
+## 3     g</code></pre>
+<p>It looks like you can only extract one volume at a time with extract?</p>
 </div>
 </div>
 

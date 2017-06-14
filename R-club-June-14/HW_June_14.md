@@ -360,3 +360,282 @@ table4a %>%
 
 1999 and 2000 need to be `1999` and `2000`
 
+3. Why does spreading this tibble fail? How could you add a new column to fix it?  
+*I think it might be because there are two Phillip Woods + age combos with different age values. I can fix it by adding a column the differ in value for the duplicated entries.*    
+
+```r
+people <- tribble(
+  ~name,             ~key,    ~value,
+  #-----------------|--------|------
+  "Phillip Woods",   "age",       45,
+  "Phillip Woods",   "height",   186,
+  "Phillip Woods",   "age",       50,
+  "Jessica Cordero", "age",       37,
+  "Jessica Cordero", "height",   156
+)
+people %>%
+  mutate(thing = c(1,1,2,1,1)) %>%
+  spread(key = key, value = value)
+```
+
+```
+## # A tibble: 3 x 4
+##              name thing   age height
+## *           <chr> <dbl> <dbl>  <dbl>
+## 1 Jessica Cordero     1    37    156
+## 2   Phillip Woods     1    45    186
+## 3   Phillip Woods     2    50     NA
+```
+
+4. Tidy the simple tibble below. Do you need to spread or gather it? Whhat are teh variables?  
+
+```r
+preg <- tribble(
+  ~pregnant, ~male, ~female,
+  "yes",     NA,    10,
+  "no",      20,    12
+)
+preg %>%
+  gather(male, female, key = "gender", value = "count")
+```
+
+```
+## # A tibble: 4 x 3
+##   pregnant gender count
+##      <chr>  <chr> <dbl>
+## 1      yes   male    NA
+## 2       no   male    20
+## 3      yes female    10
+## 4       no female    12
+```
+
+I gathered it but i'm not sure if that's all I can do.  
+
+###12.4 Separating and uniting  
+
+####12.4.1 Separate  
+
+```r
+table3 = tibble("country" = c("Afghanistan", "Afghanistan","Brazil","Brazil","China","China"), "year" = c(1999,2000,1999,2000,1999,2000), "rate" = c("745/19987371","2666/20595360" , "37737/172006362", "80488/174504898", "212258/1272915272", "213766/1280428583"))
+table3 %>%
+  separate(rate, into = c("cases","population"))
+```
+
+```
+## # A tibble: 6 x 4
+##       country  year  cases population
+## *       <chr> <dbl>  <chr>      <chr>
+## 1 Afghanistan  1999    745   19987371
+## 2 Afghanistan  2000   2666   20595360
+## 3      Brazil  1999  37737  172006362
+## 4      Brazil  2000  80488  174504898
+## 5       China  1999 212258 1272915272
+## 6       China  2000 213766 1280428583
+```
+
+```r
+table3 %>%
+  separate(rate, into = c("cases","population"), sep = "/")
+```
+
+```
+## # A tibble: 6 x 4
+##       country  year  cases population
+## *       <chr> <dbl>  <chr>      <chr>
+## 1 Afghanistan  1999    745   19987371
+## 2 Afghanistan  2000   2666   20595360
+## 3      Brazil  1999  37737  172006362
+## 4      Brazil  2000  80488  174504898
+## 5       China  1999 212258 1272915272
+## 6       China  2000 213766 1280428583
+```
+
+```r
+table3 %>%
+  separate(rate, into = c("cases","population"), convert = TRUE)
+```
+
+```
+## # A tibble: 6 x 4
+##       country  year  cases population
+## *       <chr> <dbl>  <int>      <int>
+## 1 Afghanistan  1999    745   19987371
+## 2 Afghanistan  2000   2666   20595360
+## 3      Brazil  1999  37737  172006362
+## 4      Brazil  2000  80488  174504898
+## 5       China  1999 212258 1272915272
+## 6       China  2000 213766 1280428583
+```
+
+```r
+table5 = table3 %>%
+  separate(year, into = c("century","year"), sep = 2)
+```
+
+####12.4.2 Unite  
+
+```r
+table5 %>%
+  unite(new, century, year, sep = "")
+```
+
+```
+## # A tibble: 6 x 3
+##       country   new              rate
+## *       <chr> <chr>             <chr>
+## 1 Afghanistan  1999      745/19987371
+## 2 Afghanistan  2000     2666/20595360
+## 3      Brazil  1999   37737/172006362
+## 4      Brazil  2000   80488/174504898
+## 5       China  1999 212258/1272915272
+## 6       China  2000 213766/1280428583
+```
+
+####12.4.3Exercises   
+1. What do the `extra` and `fill` arguments do in `separate()`? Experiment with the various options for the following two toy datasets.   
+
+```r
+?separate()
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+  separate(x, c("one", "two", "three"))
+```
+
+```
+## Warning: Too many values at 1 locations: 2
+```
+
+```
+## # A tibble: 3 x 3
+##     one   two three
+## * <chr> <chr> <chr>
+## 1     a     b     c
+## 2     d     e     f
+## 3     h     i     j
+```
+
+```r
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+  separate(x, c("one", "two", "three"), extra = "drop")
+```
+
+```
+## # A tibble: 3 x 3
+##     one   two three
+## * <chr> <chr> <chr>
+## 1     a     b     c
+## 2     d     e     f
+## 3     h     i     j
+```
+
+```r
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+  separate(x, c("one", "two", "three"), extra = "merge")
+```
+
+```
+## # A tibble: 3 x 3
+##     one   two three
+## * <chr> <chr> <chr>
+## 1     a     b     c
+## 2     d     e   f,g
+## 3     h     i     j
+```
+
+```r
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+  separate(x, c("one", "two", "three"))
+```
+
+```
+## Warning: Too few values at 1 locations: 2
+```
+
+```
+## # A tibble: 3 x 3
+##     one   two three
+## * <chr> <chr> <chr>
+## 1     a     b     c
+## 2     d     e  <NA>
+## 3     f     g     i
+```
+
+```r
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+  separate(x, c("one", "two", "three"), fill = "left")
+```
+
+```
+## # A tibble: 3 x 3
+##     one   two three
+## * <chr> <chr> <chr>
+## 1     a     b     c
+## 2  <NA>     d     e
+## 3     f     g     i
+```
+
+```r
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+  separate(x, c("one", "two", "three"), fill = "right")
+```
+
+```
+## # A tibble: 3 x 3
+##     one   two three
+## * <chr> <chr> <chr>
+## 1     a     b     c
+## 2     d     e  <NA>
+## 3     f     g     i
+```
+
+2. Both `unite()` and `separate()` have a `remove` argument. What does it do? Why would you set it to `FALSE`?  
+
+```r
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+  separate(x, c("one", "two", "three"), fill = "right", remove = FALSE)
+```
+
+```
+## # A tibble: 3 x 4
+##       x   one   two three
+## * <chr> <chr> <chr> <chr>
+## 1 a,b,c     a     b     c
+## 2   d,e     d     e  <NA>
+## 3 f,g,i     f     g     i
+```
+
+It removes the new table from the original table. If you set it to FALSE you will get a table that is a combination of the original and the transformed table.  
+
+3. Compare and contrast `separate()` and `extract()`. Why are there three variations of separation (by position, by separator and with groups), but only one unite? 
+
+
+```r
+?extract()
+```
+
+```
+## Help on topic 'extract' was found in the following packages:
+## 
+##   Package               Library
+##   tidyr                 /Library/Frameworks/R.framework/Versions/3.3/Resources/library
+##   magrittr              /Library/Frameworks/R.framework/Versions/3.3/Resources/library
+## 
+## 
+## Using the first match ...
+```
+
+```r
+tibble(x = c("a,b,c", "d,e,f", "g,h,i")) %>% 
+  extract(x, "A")
+```
+
+```
+## # A tibble: 3 x 1
+##       A
+## * <chr>
+## 1     a
+## 2     d
+## 3     g
+```
+
+It looks like you can only extract one volume at a time with extract? 
+ 
