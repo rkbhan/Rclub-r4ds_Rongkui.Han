@@ -139,7 +139,8 @@ people <- tribble(
   "Jessica Cordero", "height",   156
 )
 people %>%
-  mutate(thing = c(1,1,2,1,1)) %>%
+  group_by(name,key) %>%
+  mutate(thing = row_number()) %>% #smart
   spread(key = key, value = value)
 ```
 
@@ -208,8 +209,9 @@ It removes the new table from the original table. If you set it to FALSE you wil
 ```{r}
 ?extract()
 tibble(x = c("a,b,c", "d,e,f", "g,h,i")) %>% 
-  extract(x, "A")
+  extract(x, c("A","B","C"), "([[:alnum:]]+),([[:alnum:]]+),([[:alnum:]]+)")
+tibble(x = c("a,b,c", "d,e,f", "g,h,i")) %>% 
+  extract(x, c("A","B","C"), "(.),(.),(.)")
 ```
 
-It looks like you can only extract one volume at a time with extract? 
- 
+Super complcated with "regular expression" involved. It is useful for separating out chunks of a complex name (separated by different things). 
