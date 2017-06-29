@@ -1,0 +1,233 @@
+---
+title: "HW_June_28"
+author: "Rongkui Han"
+date: "June 28, 2017"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+```
+
+###13.3 Keys   
+
+Checking for unique keys (primary keys):  
+```{r}
+planes %>%
+  count(tailnum) %>%
+  filter(n>1)
+
+weather %>%
+  count(year, month, day, hour, origin) %>%
+  filter(n > 1)
+``` 
+
+Or the lack thereof:  
+```{r}
+flights %>%
+  count(year, month, day, flight) %>%
+  filter(n > 1)
+flights %>%
+  count(year, month, day, tailnum) %>%
+  filter(n > 1)
+```
+
+####13.3.1 Exercises    
+1. Add a surrogate key to flights.  
+```{r}
+?row_number()
+primary_flights = flights %>%
+  mutate(surrogate_key = row_number(flight))
+primary_flights
+```
+2. Identify the keys in the following datasets:  
+```{r}
+head(Lahman::Batting)
+Lahman::Batting %>%
+  count(playerID) %>%
+  filter(n > 1) #foreign key? Not a primary key.
+Lahman::Batting %>%
+  count(teamID) %>%
+  filter(n > 1) #foreign key? Not a primary key.
+
+ggplot2::diamonds
+#There is no primary key (unique identifier) in this table. 
+```
+
+3.   
+```{r}
+head(Lahman::Batting)
+head(Lahman::Master)
+head(Lahman::Managers)
+Lahman::Master %>%
+  count(playerID) %>%
+  filter(n>1)
+Lahman::Batting %>%
+  count(playerID) %>%
+  filter(n>1)
+Lahman::Managers %>%
+  count(playerID) %>%
+  filter(n>1)
+```
+
+Both Batting and Managers contain the foreign key "playerID" that is a primary keys in Master.   
+
+###13.4 Mutating joins  
+```{r}
+flights2 = flights %>%
+  select(year:day, hour, origin, dest, tailnum, carrier)
+flights2 %>%
+  select(-origin, -dest) %>%
+  left_join(airlines, by = "carrier")
+flights2 %>% #this is the equivalent of the left_join() function
+  select(-origin, -dest) %>%
+  mutate(name = airlines$name[match(carrier, airlines$carrier)])
+```
+
+####13.4.6 Exercises   
+1. Compute the average delay by destination, then join on the airports data frame so you can show the spatial distribution of delays.  
+```{r}
+head(flights)
+avg_delay = flights %>%
+  group_by(dest) %>%
+  summarise(avg.delay = mean(arr_delay, na.rm = TRUE))
+avg_delay
+airports %>%
+  left_join(avg_delay, c("faa" = "dest")) %>%
+  ggplot(aes(lon, lat)) +
+    borders("state") +
+    geom_point(aes(colour = avg.delay), size = 0.1) +
+    coord_quickmap()
+```
+
+2. Add the location of the origin and destination (i.e. the lat and lon) to flights.  
+```{r}
+flight.loc = flights %>%
+  left_join(airports, c("dest" = "faa"))
+head(flight.loc)
+```
+
+3. Is there a relationship between the age of a plane and its delays?  
+```{r}
+flight.age = flights %>%
+  left_join(planes, by = "tailnum") %>%
+  mutate(delay = arr_delay/air_time)
+head(flight.age)
+colnames(flight.age)
+ggplot(flight.age, aes(x = year.y, y = delay)) +
+  geom_point()
+```
+
+Looks like newer planes are more likely to get delayed.  
+
+4. What weather conditions make it more likely to see a delay?  
+```{r}
+flights.weather = flights %>%
+  left_join(weather, by = c("year", "month", "day" , "hour"))
+head(flights.weather)
+ggplot(flights.weather, aes(x = wind_speed, y = arr_delay)) +
+  coord_cartesian(xlim = c(0, 100)) +
+  geom_point()
+ggplot(flights.weather, aes(x = wind_gust, y = arr_delay)) +
+  coord_cartesian(xlim = c(0, 100)) +
+  geom_point(aes(colour = wind_dir))
+ggplot(flights.weather, aes(x = wind_dir, y = arr_delay)) +
+  geom_point() 
+ggplot(flights.weather, aes(x = temp, y = arr_delay)) +
+  geom_point(aes(colour = humid)) 
+```
+
+I can't seem to find any trends.  
+
+5. What happened on June 13 2013? Display the spatial pattern of delays, and then use Google to cross reference with the weather.  
+```{r}
+flights.weather %>% 
+  filter(year == 2013 & month == 6 & day == 13) %>%
+  summarise(mean(arr_delay, na.rm = TRUE))
+flights.weather %>% 
+  summarise(mean(arr_delay, na.rm = TRUE))
+```
+
+The mean delay time on June 13, 2013 is 10x the average delay time across all flights in the year of 2013. According to google, there was a heavy storm in NYC on that day. 
+
+###13.5 filtering joins
+```{r}
+top_dest = flights %>%
+  count(dest, sort = TRUE) %>%
+  head(10)
+top_dest
+flights %>%
+  filter(dest %in% top_dest$dest) #amazing. This %in% thing. 
+```
+
+```{r}
+flights %>%
+  semi_join(top_dest) #Even more amazing.
+```
+
+####13.5.1 Exercises   
+1. What does it mean for a flight to have a missing tailnum? What do the tail numbers that don’t have a matching record in planes have in common? (Hint: one variable explains ~90% of the problems.)  
+```{r}
+missing.tail = flights %>%
+  anti_join(planes, by = "tailnum")
+head(missing.tail)
+ggplot(missing.tail) +
+  geom_bar(aes(carrier))
+```
+
+It *looks* like their tailnumbers all start with "N", but this is unsolicited observation...  
+
+2. Filter flights to only show flights with planes that have flown at least 100 flights.   
+```{r}
+flights %>%
+  count(tailnum) %>%
+  filter(n > 100)
+```
+
+3. Combine fueleconomy::vehicles and fueleconomy::common to find only the records of the most common models.  
+```{r}
+#install.packages("fueleconomy")
+library(fueleconomy)
+fueleconomy::vehicles %>%
+  semi_join(fueleconomy::common)
+```
+
+4. Find the 48 hours (over the course of the whole year) that have the worst delays. Cross-reference it with the weather data. Can you see any patterns?  
+```{r}
+head(flights)
+ggplot(flights, aes(x = time_hour, y = arr_delay)) +
+  coord_cartesian(ylim = c(450,1250)) +
+  geom_point()
+```
+
+Can't find it.  
+
+5. What does anti_join(flights, airports, by = c("dest" = "faa")) tell you? What does anti_join(airports, flights, by = c("faa" = "dest")) tell you?  
+```{r}
+nodest = anti_join(flights, airports, by = c("dest" = "faa")) 
+levels(as.factor(nodest$dest))
+```
+
+This says that in the flight13 dataset there are four airports whose data are missing from the airports table.   
+
+```{r}
+head(anti_join(airports, flights, by = c("faa" = "dest")))
+```
+
+This says there are a lot of airports that do not have direct flights with airports in NYC.  
+
+6. You might expect that there’s an implicit relationship between plane and airline, because each plane is flown by a single airline. Confirm or reject this hypothesis using the tools you’ve learned above.  
+
+```{r}
+tail_carrier = flights %>%
+  count(tailnum, carrier, sort = TRUE)
+tail = flights %>%
+  count(tailnum, sort = TRUE)
+tail_carrier %>%
+  anti_join(tail, by = c("n", "tailnum"))
+```
+
+Looks like there are 41 planes flown by more than one airlines.  
