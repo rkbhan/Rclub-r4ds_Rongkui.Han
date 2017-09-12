@@ -5,3 +5,266 @@ output:
     keep_md: yes
 ---
 
+#Chapter 15: Factors  
+
+##15.1.1 Prerequisites  
+```{r}
+library(tidyverse)
+library(forcats)
+```
+
+##15.2 Crearing factors  
+```{r}
+x1 = c("Dec","Apr","Jan","Mar")
+x2 = c("Dec","Apr","Jam","Mar")
+month_levels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
+y1 = factor(x1, levels = month_levels)
+y1
+sort(y1) #wow sorts in the order of the reference levels vector. 
+y2 = parse_factor(x2, levels = month_levels) #gives warning for typo.
+```
+
+```{r}
+factor(x1) #w/o "levels=" input, levels are automatically sorted in alphabetical order.
+f1 = factor(x1, levels = unique(x1)) #order of levels match the order of first appearance in the dataset
+f1
+
+f2 = x1 %>% factor() %>% fct_inorder() #order of levels match the order of first appearance. 
+f2
+
+levels(f2)
+```
+
+##15.3 General Social Survey  
+```{r}
+head(gss_cat)
+gss_cat %>%
+  count(race)
+ggplot(gss_cat, aes(x = race)) +
+  geom_bar()
+ggplot(gss_cat, aes(x = race)) +
+  geom_bar() +
+  scale_x_discrete(drop = FALSE)
+```
+
+###15.3.1 Exercise    
+1. Explore the distribution of rincome (reported income). What makes the default bar chart hard to understand? How could you improve the plot?  
+
+```{r}
+gss_cat %>%
+  count(rincome)
+ggplot(gss_cat, aes(x = rincome)) +
+  geom_bar() +
+  theme(text = element_text(size = 10), axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+*The original bar chart is confusing because the lower income is on the right side of the x axis.* This can be fixed by manually ordering the levels in rincome.   
+
+```{r}
+level = names(table(gss_cat$rincome))[order(names(table(gss_cat$rincome)))]
+ggplot(gss_cat, aes(x = factor(rincome, levels = level))) +
+  geom_bar() +
+  theme(text = element_text(size = 10), axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+2. What is the most common relig in this survey? What’s the most common partyid?  
+ 
+```{r}
+ggplot(gss_cat) +
+  geom_bar(aes(x = relig)) +
+  theme(axis.text.x = element_text(size = 10, angle = 45, hjust = 1)) #Protestant
+ggplot(gss_cat) +
+  geom_bar(aes(x = partyid)) +
+  theme(text = element_text(size = 10), axis.text.x = element_text(angle = 45, hjust = 1)) #independent
+```
+
+3. Which relig does denom (denomination) apply to? How can you find out with a table? How can you find out with a visualisation?  
+```{r}
+#Find out with a table:
+by_relig = group_by(gss_cat, relig)
+summarise(by_relig, Denomination = n_distinct(denom)) #Checking how many demoninations are under each religion.
+
+#Find out with visualization:
+ggplot(gss_cat) +
+  geom_bar(aes(x = relig , fill = denom)) +
+  theme(axis.text.x = element_text(size = 10, angle = 45, hjust = 1)) # Christians and Protestants
+```
+
+## 15.4 Modifying factor order  
+
+```{r}
+relig_summary = gss_cat %>%
+  group_by(relig) %>%
+  summarise(
+    age = mean(age, na.rm = TRUE),
+    tvhours = mean(tvhours, na.rm = TRUE),
+    n = n()
+  )
+ggplot(relig_summary, aes(x = tvhours, y = relig)) + geom_point() # people who don't knwo what their religions are tend to watch more TV...?
+```
+
+After reordering the y axis by the values on the x axis:  
+
+```{r}
+ggplot(relig_summary, aes(x = tvhours, y = fct_reorder(relig, tvhours))) + geom_point()
+```
+
+We can do the same thing by creating a separate coloumn. I like the previous method better tho:  
+
+```{r}
+relig_summary %>%
+  mutate(relig = fct_reorder(relig, tvhours)) %>%
+  ggplot(aes(tvhours, relig)) +
+  geom_point()
+```
+
+```{r}
+rincome_summary = gss_cat %>%
+  group_by(rincome) %>%
+  summarise(age = mean(age, na.rm = TRUE), tvhours = mean(tvhours, na.rm = TRUE), n = n())
+
+ggplot(rincome_summary) +
+  geom_point(aes(x = age, y = fct_reorder(rincome, age)))
+
+ggplot(rincome_summary) +
+  geom_point(aes(x = age, y = fct_relevel(rincome, "Not applicable"))) #put "Not applicable" at the front of the list. 
+```
+
+```{r}
+by_am = gss_cat %>%
+  filter(!is.na(age)) %>% #filter(!is.na()) is very smart
+  group_by(age, marital) %>%
+  count()
+by_age = gss_cat %>%
+  group_by(age) %>%
+  count()
+by_am
+by_age
+colnames(by_age) = c("age","N")
+by_am = merge(by_am, by_age)
+by_am = by_am %>%
+  mutate(prop = n/N)
+
+ggplot(by_am, aes(age, prop, colour = marital)) +
+  geom_line(na.rm = TRUE)
+
+ggplot(by_am, aes(age, prop, colour = fct_reorder2(marital, age, prop))) +
+  geom_line() +
+  labs(colour = "marital")
+
+gss_cat %>%
+  mutate(marital = marital %>% fct_infreq() %>% fct_rev()) %>% #dont know what really happened here but ok.
+  ggplot(aes(marital)) +
+  geom_bar()
+```
+
+###15.4.1 Exercises  
+
+1. There are some suspiciously high numbers in tvhours. Is the mean a good summary?
+
+*maybe not...?*
+
+2. For each factor in gss_cat identify whether the order of the levels is arbitrary or principled.
+
+```{r}
+colnames(gss_cat)
+levels(gss_cat$year)
+levels(gss_cat$marital)
+levels(gss_cat$rincome)
+```
+
+Don't know the answer to the questions...  
+
+3. Why did moving “Not applicable” to the front of the levels move it to the bottom of the plot?  
+
+Because the front of the list is the closest to the x-axis.  
+
+###15.5 Modifying factor levels  
+
+```{r}
+gss_cat %>%
+  count(partyid)
+gss_cat %>%
+  mutate(partyid = fct_recode(partyid,
+      "Republican, strong" = "Strong republican",
+      "Republican, weak"      = "Not str republican",
+      "Independent, near rep" = "Ind,near rep",
+      "Independent, near dem" = "Ind,near dem",
+      "Democrat, weak"        = "Not str democrat",
+      "Democrat, strong"      = "Strong democrat")) %>%
+  count(partyid)
+
+gss_cat %>%
+  mutate(partyid = fct_recode(partyid,
+    "Republican, strong"    = "Strong republican",
+    "Republican, weak"      = "Not str republican",
+    "Independent, near rep" = "Ind,near rep",
+    "Independent, near dem" = "Ind,near dem",
+    "Democrat, weak"        = "Not str democrat",
+    "Democrat, strong"      = "Strong democrat",
+    "Other"                 = "No answer",
+    "Other"                 = "Don't know",
+    "Other"                 = "Other party"
+  )) %>%
+  count(partyid)
+```
+
+```{r}
+gss_cat %>%
+  mutate(partyid = fct_collapse(partyid,
+    other = c("No answer", "Don't know", "Other party"),
+    rep = c("Strong republican", "Not str republican"),
+    ind = c("Ind,near rep", "Independent", "Ind,near dem"),
+    dem = c("Not str democrat", "Strong democrat")
+  )) %>%
+  count(partyid)
+```
+
+```{r}
+gss_cat %>%
+  mutate(relig = fct_lump(relig)) %>%
+  count(relig)
+```
+
+```{r}
+gss_cat %>%
+  mutate(relig = fct_lump(relig, n= 10)) %>%
+  count(relig, sort = TRUE) %>%
+  print()
+```
+
+```{r}
+by_partyage = gss_cat %>%
+  mutate(partyid = fct_recode(partyid,
+    "Republican, strong"    = "Strong republican",
+    "Republican, weak"      = "Not str republican",
+    "Independent, near rep" = "Ind,near rep",
+    "Independent, near dem" = "Ind,near dem",
+    "Democrat, weak"        = "Not str democrat",
+    "Democrat, strong"      = "Strong democrat",
+    "Other"                 = "No answer",
+    "Other"                 = "Don't know",
+    "Other"                 = "Other party"
+  )) %>%
+  group_by(age, partyid) %>%
+  count()
+by_partyage
+by_age = gss_cat %>%
+  group_by(age) %>%
+  count()
+by_age
+colnames(by_age)[2] = "N"
+
+by_partyage = merge(by_partyage, by_age)
+by_partyage
+by_partyage %>%
+  mutate(prop = n/N) %>%
+  ggplot(aes(x = age , y = prop, colour = partyid)) +
+    geom_line()
+```
+
+2. How could you collapse rincome into a small set of categories?
+
+*I know how to do this. Too much typing.*
+
+
