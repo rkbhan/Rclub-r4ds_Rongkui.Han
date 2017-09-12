@@ -1,0 +1,76 @@
+---
+title: "Chapter 18 & 19"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+##19.2
+```{r}
+rescale01 <- function(x) {
+  rng <- range(x, na.rm = TRUE)
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+
+rescale01(c(NA, 1, 2,3))
+```
+
+
+###19.2.1 Practice  
+
+1. Why is TRUE not a parameter to rescale01()? What would happen if x contained a single missing value, and na.rm was FALSE?  
+
+```{r}
+
+rescale01.1 <- function(x) {
+  rng <- range(x, na.rm = FALSE)
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+
+rescale01.1(c(NA,1,2,3))
+```
+
+It would return all NA's.  
+
+2. In the second variant of rescale01(), infinite values are left unchanged. Rewrite rescale01() so that -Inf is mapped to 0, and Inf is mapped to 1.  
+
+*Don't know how to do it.*  
+
+3. Practice turning the following code snippets into functions. Think about what each function does. What would you call it? How many arguments does it need? Can you rewrite it to be more expressive or less duplicative?  
+
+```{r}
+x = c(1,2,3,4,NA,NA,NA)
+mean(is.na(x)) # returns the percentage of the input vector that is "NA".  
+
+CheckNA = function(x) {
+  mean(is.na(x))
+}
+
+CheckNA(x)
+```
+
+```{r}
+x / sum(x, na.rm = TRUE) #calculated the proportion each entry of the vector is of the sum of the vector.
+
+prop = function(x) {
+  x/sum(x, na.rm = TRUE)
+}
+
+prop(x)
+```
+
+```{r}
+sd(x, na.rm = TRUE) / mean(x, na.rm = TRUE) #calculated coefficient of variance of the vector.  
+
+cov = function(x) {
+  sd(x, na.rm = TRUE) / mean(x, na.rm = TRUE)
+}
+
+cov(x)
+```
+
+
+
+
+
+
