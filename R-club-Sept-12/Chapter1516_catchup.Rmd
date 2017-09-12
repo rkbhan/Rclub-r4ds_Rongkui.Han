@@ -268,3 +268,14 @@ by_partyage %>%
 *I know how to do this. Too much typing.*
 
 
+#Chapter 16: Date and Time  
+##16.1.1 Prerequisites  
+
+```{r}
+library(tidyverse)
+library(lubridate)
+#install.packages("nycflights13")
+library(nycflights13)
+```
+
+You know what i'm just going to skip this chapter... 
